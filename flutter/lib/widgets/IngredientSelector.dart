@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../states.dart';
@@ -13,7 +14,7 @@ class IngredientSelector extends StatefulWidget {
 class _IngredientSelectorState extends State<IngredientSelector> {
   bool _loadedIngredients = false;
   final List<SelectableIngredient> _ingredients = [
-    SelectableIngredient("Apple", "apple", icon: const Icon(Icons.apple)),
+    SelectableIngredient("Apple", "apple", icon: const Icon(MdiIcons.tree)),
   ];
   List<Ingredient> _selectedIngredients() {
     return _ingredients

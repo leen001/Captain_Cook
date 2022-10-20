@@ -90,11 +90,16 @@ class _MainAppState extends State<MainApp> {
   }
 
   Future<CatFact> _getCatFact() async {
-    final response = await http.get(Uri.parse('https://catfact.ninja/fact'));
-    if (response.statusCode == 200) {
-      return CatFact.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load cat fact');
+    try {
+      final response = await http.get(Uri.parse('https://catfact.ninja/fact'));
+
+      if (response.statusCode == 200) {
+        return CatFact.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to load cat fact');
+      }
+    } catch (e) {
+      return CatFact("Failed to load cat fact", 0);
     }
   }
 
