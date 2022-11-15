@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cookbook
+      MYSQL_USER: mariadb
+      MYSQL_PASSWORD: mariadb
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      PORT: 3000
+      DEBUG: True
+      DB_HOST: db
+      DB_USER: mariadb
+      DB_PASSWORD: mariadb
+      DB_DATABASE: cookbook
+  web:
+    build: ./flutter
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    environment:
+      API_HOST: api
+      API_PORT: 3000

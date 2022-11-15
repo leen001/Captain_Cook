@@ -4,7 +4,6 @@ import pickle
 import unidecode
 import ast
 import os
-import sys
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 filename = os.path.join(fileDir, 'inputData/recipe_details.csv')
