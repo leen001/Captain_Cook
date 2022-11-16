@@ -7,8 +7,8 @@ import os
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 filename = os.path.join(fileDir, 'inputData/recipe_details.csv')
-filename1 = os.path.join(fileDir, 'inputData/tfidf_encodings.pkl')
-filename2 = os.path.join(fileDir, 'models/tfidf.pkl')
+filename1 = os.path.join(fileDir, 'inputData/tfidf_encodings.pkl')  # encodings
+filename2 = os.path.join(fileDir, 'models/tfidf.pkl')   # weights
 
 # Getting the top-n recomendations ordered by the score
 def get_recommendations(n, scores):
@@ -18,30 +18,28 @@ def get_recommendations(n, scores):
     top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:n]
     # Creating a dataframe to load in the recommendations
     recommendation = pd.DataFrame(columns=['recipe', 'ingredients','prep_time','cooking_time','total_time','recipe_servings','recipe_yield','r_direction','r_nutrition_info','score'])
-    count = 0
-    for i in top:
+    for i, ti in enumerate(top):
         # recipe_name,prep_time,cooking_time,total_time,recipe_servings,recipe_yield,r_ingrids,r_direction,r_nutrition_info
-        recommendation.at[count, 'recipe'] = title_parser(df_recipes['recipe_name'][i])
-        print(recommendation.at[count, 'recipe'])
-        recommendation.at[count, 'ingredients'] = ingredient_parser_final(df_recipes['r_ingrids'][i])
-        print(recommendation.at[count, 'ingredients'])
-        recommendation.at[count, 'prep_time'] = df_recipes['prep_time'][i]
-        print(recommendation.at[count, 'prep_time'])
-        recommendation.at[count, 'cooking_time'] = df_recipes['cooking_time'][i]
-        print(recommendation.at[count, 'cooking_time'])
-        recommendation.at[count, 'total_time'] = df_recipes['total_time'][i]
-        print(recommendation.at[count, 'total_time'])
-        recommendation.at[count, 'recipe_servings'] = df_recipes['recipe_servings'][i]
-        print(recommendation.at[count, 'recipe_servings'])
-        recommendation.at[count, 'recipe_yield'] = df_recipes['recipe_yield'][i]
-        print(recommendation.at[count, 'recipe_yield'])
-        recommendation.at[count, 'r_direction'] = df_recipes['r_direction'][i]
-        print(recommendation.at[count, 'r_direction'])
-        recommendation.at[count, 'r_nutrition_info'] = df_recipes['r_nutrition_info'][i]
-        print(recommendation.at[count, 'r_nutrition_info'])
-        recommendation.at[count, 'score'] = "{:.3f}".format(float(scores[i]))
-        print(recommendation.at[count, 'score'])
-        count += 1
+        recommendation.at[i, 'recipe'] = title_parser(df_recipes['recipe_name'][ti])
+        print(recommendation.at[i, 'recipe'])
+        recommendation.at[i, 'ingredients'] = ingredient_parser_final(df_recipes['r_ingrids'][ti])
+        print(recommendation.at[i, 'ingredients'])
+        recommendation.at[i, 'prep_time'] = df_recipes['prep_time'][ti]
+        print(recommendation.at[i, 'prep_time'])
+        recommendation.at[i, 'cooking_time'] = df_recipes['cooking_time'][ti]
+        print(recommendation.at[i, 'cooking_time'])
+        recommendation.at[i, 'total_time'] = df_recipes['total_time'][ti]
+        print(recommendation.at[i, 'total_time'])
+        recommendation.at[i, 'recipe_servings'] = df_recipes['recipe_servings'][ti]
+        print(recommendation.at[i, 'recipe_servings'])
+        recommendation.at[i, 'recipe_yield'] = df_recipes['recipe_yield'][ti]
+        print(recommendation.at[i, 'recipe_yield'])
+        recommendation.at[i, 'r_direction'] = df_recipes['r_direction'][ti]
+        print(recommendation.at[i, 'r_direction'])
+        recommendation.at[i, 'r_nutrition_info'] = df_recipes['r_nutrition_info'][ti]
+        print(recommendation.at[i, 'r_nutrition_info'])
+        recommendation.at[i, 'score'] = "{:.3f}".format(float(scores[ti]))
+        print(recommendation.at[i, 'score'])
     return recommendation
 
 
