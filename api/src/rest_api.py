@@ -1,55 +1,64 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, redirect
+from webargs import fields
+from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
 
 import recommendation_system
 
 app = Flask(__name__)
+docs = FlaskApiSpec(app, document_options=False)
 
 
-@app.route("/", methods=["GET"])
+@app.get("/")
 def hello():
-    return HELLO_HTML
+    return redirect("/swagger-ui")
 
 
-HELLO_HTML = """
-     <html><body>
-         <h1>Welcome the API</h1>
-         <p>Please add ingredients to the url to receive recipe recommendations. </br>
-            You can do this by appending "/recipe?ingredients= Pasta Tomato ..." to the current url.
-         <br>Click <a href="/recipe?ingredients=pasta tomato onion">here</a> for an example when using the ingredients: pasta, tomato and onion.
-     </body></html>
-     """
+# docs.register(hello)
 
 
-@app.route("/recipe", methods=["GET"])
-def recommend_recipe():
-    ingredients = request.args.get("ingredients")
-    count = request.args.get("count", 5, type=int)
-    recipe = recommendation_system.rec_system(ingredients, count)
+@app.post("/recipes")
+@use_kwargs(
+    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
+)
+# @marshal_with(
+#     {
+#         "recipes": fields.Nested(
+#             {
+#                 "recipe": fields.Str(),
+#                 "ingredients": fields.Str(),
+#                 "r_direction": fields.Str(),
+#                 "prep_time": fields.Str(),
+#                 "cooking_time": fields.Str(),
+#                 "total_time": fields.Str(),
+#                 "r_nutrition_info": fields.Str(),
+#                 "recipe_servings": fields.Number(),
+#                 "recipe_yield": fields.Str(),
+#                 "score": fields.Str(),
+#             },
+#             many=True,
+#         )
+#     }
+# )
+def recommend_recipe(ingredients=list(), count=5):
+    if len(ingredients) < 1:
+        return ({"error": "Please provide at least one ingredient."}, 400)
+    if count < 1:
+        return ({"error": "Please provide a positive number for n."}, 400)
+    recipes = recommendation_system.rec_system(", ".join(ingredients), count)
 
-    response = {}
-    for i, row in recipe.iterrows():
-        # recipe_name,prep_time,cooking_time,total_time,recipe_servings,recipe_yield,r_ingrids,r_direction,r_nutrition_info
-        response[i] = {
-            "recipe": str(row["recipe"]),
-            "ingredients": str(row["ingredients"]),
-            "prep_time": str(row["prep_time"]),
-            "cooking_time": str(row["cooking_time"]),
-            "total_time": str(row["total_time"]),
-            "recipe_servings": str(row["recipe_servings"]),
-            "recipe_yield": str(row["recipe_yield"]),
-            "r_direction": str(row["r_direction"]),
-            "r_nutrition_info": str(row["r_nutrition_info"]),
-            "score": str(row["score"])
-        }
-    return jsonify(response)
+    return (
+        {
+            "recipes": [dict(row) for _, row in recipes.iterrows()],
+            "count": recipes.shape[0],
+        },
+        200,
+    )
+
+
+docs.register(recommend_recipe)
 
 
 if __name__ == "__main__":
-    port = os.environ.get("PORT", 3000, type=int)
+    port = int(os.environ.get("PORT", 3000))
     app.run(debug=bool(os.environ.get("DEBUG", True)), host="0.0.0.0", port=port)
-
-# http://127.0.0.1:5000/recipe?ingredients=pasta
-
-# use ipconfig getifaddr en0 in terminal (ipconfig if you are on windows, ip a if on linux)
-# to find intenal (LAN) IP address. Then on any devide on network you can use server.
