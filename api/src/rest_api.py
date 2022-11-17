@@ -1,7 +1,9 @@
 import os
 from flask import Flask, redirect
 from webargs import fields
+from marshmallow import Schema
 from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
+from schemas import RecipeSchema
 
 import recommendation_system
 
@@ -21,25 +23,14 @@ def hello():
 @use_kwargs(
     {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
 )
-# @marshal_with(
-#     {
-#         "recipes": fields.Nested(
-#             {
-#                 "recipe": fields.Str(),
-#                 "ingredients": fields.Str(),
-#                 "r_direction": fields.Str(),
-#                 "prep_time": fields.Str(),
-#                 "cooking_time": fields.Str(),
-#                 "total_time": fields.Str(),
-#                 "r_nutrition_info": fields.Str(),
-#                 "recipe_servings": fields.Number(),
-#                 "recipe_yield": fields.Str(),
-#                 "score": fields.Str(),
-#             },
-#             many=True,
-#         )
-#     }
-# )
+@marshal_with(
+    Schema.from_dict(
+        {"recipes": fields.Nested(RecipeSchema, many=True)},
+        name="RecipeRecommendations",
+    ),
+    200,
+)
+@marshal_with(Schema.from_dict({"error": fields.Str()}, name="BasicError"), 400)
 def recommend_recipe(ingredients=list(), count=5):
     if len(ingredients) < 1:
         return ({"error": "Please provide at least one ingredient."}, 400)
