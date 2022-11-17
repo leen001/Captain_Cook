@@ -1,3 +1,8 @@
+secrets:
+  GOOGLE_CLIENT_ID:
+    file: secrets/google_client_id
+  GOOGLE_CLIENT_SECRET:
+    file: secrets/google_client_secret
 services:
   db:
     image: mariadb
@@ -15,10 +20,14 @@ services:
     environment:
       PORT: 3000
       DEBUG: True
+      # SECRET_KEY:
       DB_HOST: db
       DB_USER: mariadb
       DB_PASSWORD: mariadb
       DB_DATABASE: cookbook
+    secrets:
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
   web:
     build: ./flutter
     ports:

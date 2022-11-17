@@ -1,5 +1,7 @@
 import marshmallow as ma
 
+class BasicError(ma.Schema):
+    error = ma.fields.Str()
 
 class RecipeSchema(ma.Schema):
     recipe = ma.fields.String()
@@ -12,3 +14,10 @@ class RecipeSchema(ma.Schema):
     recipe_servings = ma.fields.Number()
     recipe_yield = ma.fields.String()
     score = ma.fields.String()
+
+
+class UserSchema(ma.Schema):
+    uid = ma.fields.Integer()
+    name = ma.fields.String()
+    mail = ma.fields.String()
+    picture = ma.fields.String()
