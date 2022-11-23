@@ -1,7 +1,13 @@
 import marshmallow as ma
 
+
 class BasicError(ma.Schema):
     error = ma.fields.Str()
+
+
+class BasicSuccess(ma.Schema):
+    success = ma.fields.Str()
+
 
 class RecipeSchema(ma.Schema):
     recipe = ma.fields.String()

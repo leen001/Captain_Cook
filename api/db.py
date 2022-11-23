@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime
+import flask_login
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -31,13 +32,13 @@ def insert_from_csv(session: Session, csv_file: str, model: Base):
     print(f"Data inserted ({total} rows)")
 
 
-class User(Base):
+class User(Base, flask_login.UserMixin):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     google_uid = Column(String(50), unique=True)
     name = Column(String(50))
-    mail = Column(String(80))
-    picture = Column(String(50))
+    mail = Column(String(80), unique=True)
+    picture = Column(String(100))
     first_login = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime, default=datetime.utcnow)
 
@@ -46,6 +47,15 @@ class User(Base):
         self.name = name
         self.mail = mail
         self.picture = picture
+
+    def get_by_gid(self, google_id, session: Session):
+        return session.query(User).filter_by(google_uid=google_id).first() or None
+
+    def login(self, session: Session):
+        self.last_login = datetime.utcnow()
+        session.add(self)
+        session.commit()
+        return self
 
 
 class Recipe(Base):

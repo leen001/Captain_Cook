@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 import sys
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, url_for
 import sqlalchemy
 from webargs import fields
 from marshmallow import Schema
@@ -15,10 +15,11 @@ from flask_login import (
     current_user,
 )
 from oauthlib.oauth2 import WebApplicationClient
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 import requests
 from db import User, Recipe, init_db, insert_from_csv
 
-from schemas import BasicError, RecipeSchema, UserSchema
+from schemas import BasicError, BasicSuccess, RecipeSchema, UserSchema
 import recommendation_system
 
 try:
@@ -57,6 +58,26 @@ docs = FlaskApiSpec(app, document_options=False)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def user_loader(gid):
+    return User.get_by_gid(gid, db)
+
+
+# @login_manager.request_loader
+# def request_loader(request):
+#     gid = request.form.get("google_uid")
+#     if gid:
+#         return User.get_by_gid(gid, db)
+#     return None
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return redirect(url_for("login"))
+
+
 oauth_client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 try:
@@ -84,17 +105,14 @@ insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
 # Flask-Login helper to retrieve a user from our db
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    # return User.get(user_id)
-    pass
-
-
-# @LoginManager.unauthorized_handler
 @app.get("/auth/login")
+@use_kwargs({
+    "no_redirect": fields.Bool(missing=False),
+}, location="query")
 @marshal_with(None, code=302, description="Redirect to Google login page")
+@marshal_with(Schema.from_dict({"success": fields.Str(), "redirect_uri": fields.Str()}, name="RedirectResponse"), code=200, description="Redirect URI")
 @marshal_with(BasicError, code=500)  # TODO: Add error handling
-def login():
+def login(no_redirect: bool = False):
     # Find out what URL to hit for Google login
     authorization_endpoint = get_google_endpoint("authorization_endpoint")
 
@@ -105,12 +123,13 @@ def login():
         redirect_uri=request.base_url + "/callback",
         scope=["openid", "email", "profile"],
     )
-    return redirect(request_uri, code=302)
+    return redirect(request_uri, code=302) if not no_redirect else ({"success": True, "redirect_uri": request_uri}, 200)
 
 
 @app.get("/auth/login/callback")
 @marshal_with(
-    UserSchema,
+    Schema.from_dict({"auth_code": fields.Str(), "user": fields.Nested(
+        UserSchema)}, name="LoginCallbackResponse"),
     code=200,
 )
 @marshal_with(BasicError, code=400, description="API error (e.g. mail not verified)")
@@ -134,11 +153,14 @@ def callback():
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
 
-    # Parse the tokens!
-    oauth_client.parse_request_body_response(json.dumps(token_response.json()))
+    try:
+        oauth_client.parse_request_body_response(
+            json.dumps(token_response.json()))
+    except InvalidGrantError:
+        return ({"error": "Invalid auth code"}, 400)
 
-    userinfo_endpoint = get_google_endpoint("userinfo_endpoint")
-    uri, headers, body = oauth_client.add_token(userinfo_endpoint)
+    uri, headers, body = oauth_client.add_token(
+        get_google_endpoint("userinfo_endpoint"))
     userinfo_response = requests.get(uri, headers=headers, data=body).json()
     if not userinfo_response.get("email_verified"):
         return ({"error": "User email not available or not verified"}, 400)
@@ -146,16 +168,42 @@ def callback():
     users_email = userinfo_response["email"]
     picture = userinfo_response["picture"]
     users_name = userinfo_response["given_name"]
-    # login_user(user)
-    return (
-        {"uid": unique_id, "name": users_name,
-            "mail": users_email, "picture": picture},
-        200,
-    )
+
+    # Create a user in our db with the information provided
+    user = User(google_uid=unique_id, name=users_name,
+                mail=users_email, picture=picture)
+    user.login(db)
+    login_user(user)
+    return ({"auth_code": auth_code, "user":
+             {"uid": unique_id, "name": users_name,
+              "mail": users_email, "picture": picture}},
+            200,
+            )
+
+
+@app.get("/auth/status")
+@marshal_with(UserSchema, code=200)
+@marshal_with(BasicError, code=401, description="User not logged in")
+def status():
+    if current_user.is_authenticated:
+        return current_user, 200
+    return ({"error": "User not logged in"}, 401)
+
+
+@app.get("/auth/logout")
+@marshal_with(BasicSuccess, code=200)
+@marshal_with(BasicError, code=400)
+def logout():
+    if current_user.is_authenticated:
+        logout_user()
+        return ({"success": True}, 200)
+    return ({"error": "Not logged in"}, 400)
 
 
 docs.register(login)
 docs.register(callback)
+docs.register(status)
+docs.register(logout)
 
 
 @app.get("/")
