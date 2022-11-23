@@ -3,3 +3,4 @@
 api/src/__pycache__/recommendation_system.cpython-310.pyc
 .DS_Store
 secrets/
+*.pyc
