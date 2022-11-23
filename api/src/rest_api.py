@@ -20,24 +20,28 @@ import mariadb
 from schemas import BasicError, RecipeSchema, UserSchema
 import recommendation_system
 
-GOOGLE_CLIENT_ID = (
-    (
-        Path("/run/secrets/google_client_id")
-        if Path("/run").exists()
-        else Path(__file__).parents[2].joinpath("secrets/google_client_id")
+try:
+    GOOGLE_CLIENT_ID = (
+        (
+            Path("/run/secrets/GOOGLE_CLIENT_ID")
+            if Path("/run").exists()
+            else Path(__file__).parents[2].joinpath("secrets/google_client_id")
+        )
+        .read_text()
+        .strip()
     )
-    .read_text()
-    .strip()
-)
-GOOGLE_CLIENT_SECRET = (
-    (
-        Path("/run/secrets/google_client_secret")
-        if Path("/run").exists()
-        else Path(__file__).parents[2].joinpath("secrets/google_client_secret")
+    GOOGLE_CLIENT_SECRET = (
+        (
+            Path("/run/secrets/GOOGLE_CLIENT_SECRET")
+            if Path("/run").exists()
+            else Path(__file__).parents[2].joinpath("secrets/google_client_secret")
+        )
+        .read_text()
+        .strip()
     )
-    .read_text()
-    .strip()
-)
+except FileNotFoundError:
+    print("Google secrets not found. Please add them to the secrets folder.")
+    sys.exit(1)
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
