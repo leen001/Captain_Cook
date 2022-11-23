@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import sys
 from flask import Flask, redirect, request
 from webargs import fields
 from marshmallow import Schema
@@ -14,6 +15,7 @@ from flask_login import (
 )
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+import mariadb
 
 from schemas import BasicError, RecipeSchema, UserSchema
 import recommendation_system
@@ -52,6 +54,21 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 oauth_client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
+# global db
+try:
+    db = mariadb.connect(
+        **{
+            "host": os.environ.get("DB_HOST", "localhost"),
+            "port": int(os.environ.get("DB_PORT", 3306)),
+            "user": os.environ.get("DB_USER", "root"),
+            "password": os.environ.get("DB_PASSWORD", "root"),
+            "database": os.environ.get("DB_DATABASE", "cookbook"),
+        }
+    )
+except mariadb.Error as e:
+    print(f"Error connecting to MariaDB Platform: {e}")
+    sys.exit(1)
+
 # Flask-Login helper to retrieve a user from our db
 @login_manager.user_loader
 def load_user(user_id):
@@ -59,6 +76,7 @@ def load_user(user_id):
     pass
 
 
+# @LoginManager.unauthorized_handler
 @app.get("/auth/login")
 @marshal_with(None, code=302, description="Redirect to Google login page")
 @marshal_with(BasicError, code=500)  # TODO: Add error handling
@@ -172,3 +190,5 @@ if __name__ == "__main__":
         port=port,
         ssl_context="adhoc",
     )
+    print("Closing db connection...")
+    db.close()
