@@ -5,8 +5,7 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-compile -r requirements.txt
-RUN pip install --upgrade gunicorn
-EXPOSE 3000
 COPY . /app
-ENTRYPOINT [ "gunicorn" ]
-CMD ["--bind", "0.0.0.0:3000", "rest_api:app"]
+ENV DEBUG=True
+ENTRYPOINT [ "python" ]
+CMD ["rest_api.py" ]

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 from flask import Flask, redirect, request
+import sqlalchemy
 from webargs import fields
 from marshmallow import Schema
 from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
@@ -15,7 +16,7 @@ from flask_login import (
 )
 from oauthlib.oauth2 import WebApplicationClient
 import requests
-import mariadb
+from db import User, Recipe, init_db, insert_from_csv
 
 from schemas import BasicError, RecipeSchema, UserSchema
 import recommendation_system
@@ -58,22 +59,31 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 oauth_client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-# global db
 try:
-    db = mariadb.connect(
-        **{
-            "host": os.environ.get("DB_HOST", "localhost"),
-            "port": int(os.environ.get("DB_PORT", 3306)),
-            "user": os.environ.get("DB_USER", "root"),
-            "password": os.environ.get("DB_PASSWORD", "root"),
-            "database": os.environ.get("DB_DATABASE", "cookbook"),
-        }
-    )
-except mariadb.Error as e:
+    # db = mariadb.connect(
+    #     **{
+    #         "host": os.environ.get("DB_HOST", "localhost"),
+    #         "port": int(os.environ.get("DB_PORT", 3306)),
+    #         "user": os.environ.get("DB_USER", "root"),
+    #         "password": os.environ.get("DB_PASSWORD", "root"),
+    #         "database": os.environ.get("DB_DATABASE", "cookbook"),
+    #     }
+    # )
+    engine = sqlalchemy.create_engine(
+        f"mariadb+mariadbconnector://{os.environ.get('DB_USER', 'root')}:{os.environ.get('DB_PASSWORD', 'root')}@{os.environ.get('DB_HOST', 'localhost')}:{int(os.environ.get('DB_PORT', 3306))}/{os.environ.get('DB_DATABASE', 'cookbook')}")
+    init_db(engine, force=True)
+    db = sqlalchemy.orm.sessionmaker()
+    db.configure(bind=engine)
+    db = db()
+except sqlalchemy.exc.OperationalError as e:
     print(f"Error connecting to MariaDB Platform: {e}")
     sys.exit(1)
 
+insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
+
 # Flask-Login helper to retrieve a user from our db
+
+
 @login_manager.user_loader
 def load_user(user_id):
     # return User.get(user_id)
@@ -138,7 +148,8 @@ def callback():
     users_name = userinfo_response["given_name"]
     # login_user(user)
     return (
-        {"uid": unique_id, "name": users_name, "mail": users_email, "picture": picture},
+        {"uid": unique_id, "name": users_name,
+            "mail": users_email, "picture": picture},
         200,
     )
 
@@ -157,7 +168,8 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(
+        fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
