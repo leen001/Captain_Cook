@@ -22,28 +22,8 @@ from db import User, Recipe, init_db, insert_from_csv
 from schemas import BasicError, BasicSuccess, RecipeSchema, UserSchema
 import recommendation_system
 
-try:
-    GOOGLE_CLIENT_ID = (
-        (
-            Path("/run/secrets/GOOGLE_CLIENT_ID")
-            if Path("/run").exists()
-            else Path(__file__).parents[2].joinpath("secrets/google_client_id")
-        )
-        .read_text()
-        .strip()
-    )
-    GOOGLE_CLIENT_SECRET = (
-        (
-            Path("/run/secrets/GOOGLE_CLIENT_SECRET")
-            if Path("/run").exists()
-            else Path(__file__).parents[2].joinpath("secrets/google_client_secret")
-        )
-        .read_text()
-        .strip()
-    )
-except FileNotFoundError:
-    print("Google secrets not found. Please add them to the secrets folder.")
-    sys.exit(1)
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
