@@ -39,8 +39,8 @@ class User(Base, flask_login.UserMixin):
     name = Column(String(50))
     mail = Column(String(80), unique=True)
     picture = Column(String(100))
-    first_login = Column(DateTime, default=datetime.utcnow)
-    last_login = Column(DateTime, default=datetime.utcnow)
+    first_contact = Column(DateTime, default=datetime.utcnow)
+    last_contact = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, google_uid, name=None, mail=None, picture=None):
         self.google_uid = google_uid
@@ -52,7 +52,7 @@ class User(Base, flask_login.UserMixin):
         return session.query(User).filter_by(google_uid=google_id).first() or None
 
     def login(self, session: Session):
-        self.last_login = datetime.utcnow()
+        self.last_contact = datetime.utcnow()
         session.add(self)
         session.commit()
         return self

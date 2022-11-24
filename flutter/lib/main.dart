@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:captain_cook/api.dart';
 import 'package:captain_cook/widgets/IngredientSelector.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'states.dart';
 
@@ -40,6 +42,22 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   bool _loadingCatFact = true;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+    ],
+  );
+
+  Future<void> _handleSignIn() async {
+    try {
+      GoogleSignInAccount? user = await _googleSignIn.signIn();
+      print(user);
+    } catch (error) {
+      print(error);
+    }
+  }
+
   void _openSettings() {
     showDialog(
         context: context,
@@ -193,6 +211,29 @@ class _MainAppState extends State<MainApp> {
               ),
             ),
           ),
+          Card(
+              elevation: 10,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Login",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.indigo,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: _handleSignIn,
+                      child: const Text("Sign in with Google"),
+                    ),
+                  ],
+                ),
+              )),
           FutureBuilder<CatFact>(
             future: _getCatFact(),
             builder: (context, snapshot) {
