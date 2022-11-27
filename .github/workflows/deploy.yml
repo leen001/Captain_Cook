@@ -1,0 +1,41 @@
+name: Deploy to VPS
+ 
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  HOST: cloud.arne-kapell.de
+  USERNAME: ${{ secrets.USERNAME }}
+  PORT: ${{ secrets.PORT }}
+  KEY: ${{ secrets.SSHKEY }}
+  TARGET_PATH: "/repos/captain-cook/"
+  COMPOSE_FILE: "docker-compose.prod.yml"
+ 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: vps
+      url: "https://${{ env.HOST }}/cook"
+    steps:
+    - uses: actions/checkout@v1
+    - name: Copy repository contents via scp
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{ env.HOST }}
+        USERNAME: ${{ env.USERNAME }}
+        PORT: ${{ env.PORT }}
+        KEY: ${{ env.KEY }}
+      with:
+        source: "./*"
+        target: ${{ env.TARGET_PATH }}
+ 
+    - name: Executing remote command
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.HOST }}
+        USERNAME: ${{ env.USERNAME }}
+        PORT: ${{ env.PORT }}
+        KEY: ${{ env.SSHKEY }}
+        script: |
+          cd ${{ env.TARGET_PATH }}
+          docker compose -f ${{ env.COMPOSE_FILE }} up -d --build --force-recreate --remove-orphans > ACTION_DEPLOY.log

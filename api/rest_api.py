@@ -232,7 +232,7 @@ if __name__ == "__main__":
         debug=bool(os.environ.get("DEBUG", True)),
         host="0.0.0.0",
         port=port,
-        ssl_context="adhoc",
+        # ssl_context="adhoc",
     )
     print("Closing db connection...")
     db.close()
