@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
 
+from schemas import UserSchema
+
 Base = declarative_base()
 
 
@@ -56,6 +58,17 @@ class User(Base, flask_login.UserMixin):
         session.add(self)
         session.commit()
         return self
+
+    def asSchemeDict(self):
+        d = {
+            "uid": self.id,
+            "name": self.name,
+            "mail": self.mail,
+            "picture": self.picture,
+        }
+        assert len(UserSchema().validate(
+            d)) == 0, "UserSchema validation failed!"
+        return d
 
 
 class Recipe(Base):

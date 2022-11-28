@@ -5,6 +5,11 @@ class BasicError(ma.Schema):
     error = ma.fields.Str()
 
 
+class AuthError(ma.Schema):
+    token = ma.fields.Str()
+    error = ma.fields.Str()
+
+
 class BasicSuccess(ma.Schema):
     success = ma.fields.Str()
 
@@ -24,6 +29,6 @@ class RecipeSchema(ma.Schema):
 
 class UserSchema(ma.Schema):
     uid = ma.fields.Integer()
-    name = ma.fields.String()
+    name = ma.fields.String(allow_none=True)
     mail = ma.fields.String()
-    picture = ma.fields.String()
+    picture = ma.fields.String(allow_none=True)
