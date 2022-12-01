@@ -12,8 +12,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'states.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
-      create: (context) => AvailableIngredients(), child: const MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (context) => AvailableIngredients()),
+    ChangeNotifierProvider(create: (context) => AuthenticatedUser()),
+  ], builder: (context, child) => const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -41,21 +43,6 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   bool _loadingCatFact = true;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-    ],
-  );
-
-  Future<void> _handleSignIn() async {
-    try {
-      GoogleSignInAccount? user = await _googleSignIn.signIn();
-      print(user);
-    } catch (error) {
-      print(error);
-    }
-  }
 
   void _openSettings() {
     showDialog(
@@ -210,29 +197,88 @@ class _MainAppState extends State<MainApp> {
               ),
             ),
           ),
-          Card(
-              elevation: 10,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Login",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.indigo,
-                          fontWeight: FontWeight.bold),
+          SizedBox(
+            width: double.infinity,
+            child: Consumer<AuthenticatedUser>(
+              builder: (context, googleAuth, child) => Card(
+                  elevation: 10,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: FutureBuilder(
+                      future: googleAuth.isSignedIn,
+                      builder: (context, snapshot) => (snapshot.hasData)
+                          ? (snapshot.data as bool)
+                              ? Column(children: [
+                                  FutureBuilder(
+                                    future: googleAuth.user,
+                                    builder: (context, user) => RichText(
+                                      text: TextSpan(
+                                        text: "Logged in as ",
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor),
+                                        children: [
+                                          (user.hasData && user.data != null)
+                                              ? TextSpan(
+                                                  text: (user.data
+                                                          as GoogleSignInAccount)
+                                                      .displayName,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold))
+                                              : const TextSpan(
+                                                  text: "Unknown",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        await googleAuth.signOut();
+                                      },
+                                      child: const Text("Sign out"))
+                                ])
+                              : Column(children: [
+                                  const Text(
+                                    "Login",
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.indigo,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        await googleAuth.signIn();
+                                      },
+                                      child: const Text("Sign in")),
+                                  (googleAuth.hasError)
+                                      ? Text(
+                                          googleAuth.error,
+                                          style: const TextStyle(
+                                              color: Colors.red),
+                                        )
+                                      : const SizedBox()
+                                ])
+                          : const Center(
+                              child: SizedBox(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ElevatedButton(
-                      onPressed: _handleSignIn,
-                      child: const Text("Sign in with Google"),
-                    ),
-                  ],
-                ),
-              )),
+                  )),
+            ),
+          ),
           FutureBuilder<CatFact>(
             future: _getCatFact(),
             builder: (context, snapshot) {
