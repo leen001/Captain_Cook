@@ -1,3 +1,4 @@
+from numpy import double
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
@@ -6,41 +7,22 @@ import ast
 import os
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
-filename = os.path.join(fileDir, 'inputData/recipe_details.csv')
-filename1 = os.path.join(fileDir, 'inputData/tfidf_encodings.pkl')  # encodings
-filename2 = os.path.join(fileDir, 'models/tfidf.pkl')   # weights
+# filename = os.path.join(fileDir, 'inputData/recipe_details.csv')
+weights_for_recipes = os.path.join(fileDir, 'inputData/tfidf_encodings.pkl')
+ingredient_encodings = os.path.join(fileDir, 'models/tfidf.pkl')
 
 # Getting the top-n recomendations ordered by the score
-def get_recommendations(n, scores):
-    # Loading in recipe dataset
-    df_recipes = pd.read_csv(filename)
-    # Ordering the scores and filtering them to get the highest n scores
-    top = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:n]
-    # Creating a dataframe to load in the recommendations
-    recommendation = pd.DataFrame(columns=['recipe', 'ingredients','prep_time','cooking_time','total_time','recipe_servings','recipe_yield','r_direction','r_nutrition_info','score'])
-    for i, ti in enumerate(top):
-        # recipe_name,prep_time,cooking_time,total_time,recipe_servings,recipe_yield,r_ingrids,r_direction,r_nutrition_info
-        recommendation.at[i, 'recipe'] = title_parser(df_recipes['recipe_name'][ti])
-        print(recommendation.at[i, 'recipe'])
-        recommendation.at[i, 'ingredients'] = ingredient_parser_final(df_recipes['r_ingrids'][ti])
-        print(recommendation.at[i, 'ingredients'])
-        recommendation.at[i, 'prep_time'] = df_recipes['prep_time'][ti]
-        print(recommendation.at[i, 'prep_time'])
-        recommendation.at[i, 'cooking_time'] = df_recipes['cooking_time'][ti]
-        print(recommendation.at[i, 'cooking_time'])
-        recommendation.at[i, 'total_time'] = df_recipes['total_time'][ti]
-        print(recommendation.at[i, 'total_time'])
-        recommendation.at[i, 'recipe_servings'] = df_recipes['recipe_servings'][ti]
-        print(recommendation.at[i, 'recipe_servings'])
-        recommendation.at[i, 'recipe_yield'] = df_recipes['recipe_yield'][ti]
-        print(recommendation.at[i, 'recipe_yield'])
-        recommendation.at[i, 'r_direction'] = df_recipes['r_direction'][ti]
-        print(recommendation.at[i, 'r_direction'])
-        recommendation.at[i, 'r_nutrition_info'] = df_recipes['r_nutrition_info'][ti]
-        print(recommendation.at[i, 'r_nutrition_info'])
-        recommendation.at[i, 'score'] = "{:.3f}".format(float(scores[ti]))
-        print(recommendation.at[i, 'score'])
-    return recommendation
+
+
+def get_recommendations(n, scores, recipes_as_dict):
+    # build df from list of recipes (dicts)
+    df_recipes = pd.DataFrame.from_dict(recipes_as_dict)
+    # map scores to recipes in df
+    df_recipes['score'] = [int(double(s[0][0]) * 100) for s in scores]
+    # sort by score and return top n
+    top = df_recipes.sort_values(by='score', ascending=False).head(n)
+    # return top recipes as dicts
+    return top.to_dict('records')
 
 
 # Neatening the ingredients that are being outputted
@@ -61,34 +43,25 @@ def title_parser(title):
     return title
 
 
-def rec_system(ingredients, n=5):
+def rec_system(ingredients: list, recipes_as_dict: list, n=5):
     # The recommendation system is given a list of ingredients (param = ingredients)
     # Based on the cosine similarity it will return the top 5 recipes (number of recipes to give back, n=5)
 
     # Loading in the tdidf model and encodings
-    with open(filename1, 'rb') as f:
-        tfidf_encodings = pickle.load(f)
+    with open(weights_for_recipes, 'rb') as f:
+        weights = pickle.load(f)
 
-    with open(filename2, "rb") as f:
+    with open(ingredient_encodings, "rb") as f:
         tfidf = pickle.load(f)
 
-    # This should parse the ingriedients with the use of the clean_parse_ingreds.py but it seems to be not needed here
-    try:
-        ingredients_parsed = ingredients
-    except:
-        ingredients_parsed = [ingredients]
-    print(ingredients_parsed)
-
     # Using the pretrained tfidf model to encode the input ingredients
-    ingredients_tfidf = tfidf.transform([ingredients_parsed])
-    print(ingredients_tfidf)
+    ingredients_encoded = tfidf.transform([",".join(ingredients)])
     # Calculating the cosine similarity between the actual recipe ingreds and test ingreds
-    cos_sim = map(lambda x: cosine_similarity(ingredients_tfidf, x), tfidf_encodings)
+    cos_sim = map(lambda x: cosine_similarity(
+        ingredients_encoded, x), weights)
     scores = list(cos_sim)
-    print(cos_sim)
-    print(scores)
     # Getting the top n recommendations
-    recommendations = get_recommendations(n, scores)
+    recommendations = get_recommendations(n, scores, recipes_as_dict)
     return recommendations
 
 

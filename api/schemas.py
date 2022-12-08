@@ -15,6 +15,7 @@ class BasicSuccess(ma.Schema):
 
 
 class RecipeSchema(ma.Schema):
+    uid = ma.fields.Int()
     recipe = ma.fields.String()
     ingredients = ma.fields.String()
     r_direction = ma.fields.String()

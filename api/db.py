@@ -1,12 +1,10 @@
 import csv
 from datetime import datetime
-import flask_login
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
-
-from schemas import UserSchema
+from schemas import UserSchema, RecipeSchema
 
 Base = declarative_base()
 
@@ -34,7 +32,7 @@ def insert_from_csv(session: Session, csv_file: str, model: Base):
     print(f"Data inserted ({total} rows)")
 
 
-class User(Base, flask_login.UserMixin):
+class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     google_uid = Column(String(50), unique=True)
@@ -97,3 +95,36 @@ class Recipe(Base):
         self.ingredients = ingredients
         self.instructions = instructions
         self.nutrition = nutrition
+
+    def asDictForRecSys(self):
+        d = {
+            "id": self.id,
+            "recipe": self.name,
+            "ingredients": self.ingredients,
+            "r_direction": self.instructions,
+            "prep_time": self.prep_time,
+            "cooking_time": self.cook_time,
+            "total_time": self.total_time,
+            "r_nutrition_info": self.nutrition,
+            "recipe_servings": self.servings,
+            "recipe_yield": self.r_yield,
+        }
+        return d
+
+    def asSchemeDict(self):
+        d = {
+            "id": self.id,
+            "recipe": self.name,
+            "ingredients": self.ingredients,
+            "r_direction": self.instructions,
+            "prep_time": self.prep_time,
+            "cooking_time": self.cook_time,
+            "total_time": self.total_time,
+            "r_nutrition_info": self.nutrition,
+            "recipe_servings": self.servings,
+            "recipe_yield": self.r_yield,
+            "score": 0,
+        }
+        assert len(RecipeSchema().validate(
+            d)) == 0, "RecipeSchema validation failed! " + ", ".join(RecipeSchema().validate(d))
+        return d

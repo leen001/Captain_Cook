@@ -9,7 +9,7 @@ from middlewares import authenticated
 from db import User, Recipe, init_db, insert_from_csv
 
 from schemas import BasicError, BasicSuccess, AuthError, RecipeSchema, UserSchema
-import recommendation_system
+import recommendation_system as rs
 
 
 app = Flask(__name__)
@@ -69,19 +69,31 @@ def recommend_recipe(ingredients=list(), count=5):
         return ({"error": "Please provide at least one ingredient."}, 400)
     if count < 1:
         return ({"error": "Please provide a positive number for n."}, 400)
-    recipes = recommendation_system.rec_system(", ".join(ingredients), count)
+    db_recipes = db.query(Recipe).all()
+    recipes_as_dicts = [recipe.asDictForRecSys() for recipe in db_recipes]
+    recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
 
     return (
         {
-            "recipes": [dict(row) for _, row in recipes.iterrows()],
-            "count": recipes.shape[0],
+            "recipes": recipes,
+            "count": len(recipes)
         },
         200,
     )
 
 
-docs.register(recommend_recipe)
+@app.get("/recipes/<recipe_id>")
+@marshal_with(RecipeSchema, code=200)
+@marshal_with(BasicError, code=404, description="Recipe not found")
+def recipe_by_id(recipe_id):
+    recipe = db.query(Recipe).filter_by(id=recipe_id).first()
+    if not recipe:
+        return ({"error": "Recipe not found"}, 404)
+    return (recipe.asSchemeDict(), 200)
 
+
+docs.register(recommend_recipe)
+docs.register(recipe_by_id)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
