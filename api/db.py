@@ -6,6 +6,8 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
 from schemas import UserSchema, RecipeSchema
 
+from schemas import UserSchema
+
 Base = declarative_base()
 
 
