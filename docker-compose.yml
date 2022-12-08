@@ -7,6 +7,9 @@ services:
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: mariadb
   adminer:
+    profiles:
+      - full
+      - adminer
     image: adminer
     ports:
       - 3001:8080
@@ -45,3 +48,15 @@ services:
       API_PORT: 3000
     env_file:
       - tokens.env
+  sonar-scanner:
+    profiles:
+      - full
+      - sonar
+    image: sonarsource/sonar-scanner-cli
+    environment:
+      SONAR_HOST_URL: "http://localhost:9000"
+      SONAR_LOGIN: "sqp_6f984a61341493c85402c31cbd142b46eb1b21d8"
+      SONAR_SCANNER_OPTS: "-Dsonar.projectKey=captain-cook"
+    volumes:
+      - ".:/usr/src"
+    network_mode: "host"
