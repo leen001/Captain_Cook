@@ -3,7 +3,9 @@ name: Deploy to VPS
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  HOST: cloud.arne-kapell.de
+  HOST: captain-cook.big-sala.me
+  # HOST: cloud.arne-kapell.de
+  SSH_HOST: cloud.arne-kapell.de
   USERNAME: ${{ secrets.USERNAME }}
   PORT: ${{ secrets.PORT }}
   KEY: ${{ secrets.SSHKEY }}
@@ -21,7 +23,7 @@ jobs:
     - name: Copy repository contents via scp
       uses: appleboy/scp-action@master
       env:
-        HOST: ${{ env.HOST }}
+        HOST: ${{ env.SSH_HOST }}
         USERNAME: ${{ env.USERNAME }}
         PORT: ${{ env.PORT }}
         KEY: ${{ env.KEY }}
@@ -32,7 +34,7 @@ jobs:
     - name: Executing remote command
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ env.HOST }}
+        host: ${{ env.SSH_HOST }}
         USERNAME: ${{ env.USERNAME }}
         PORT: ${{ env.PORT }}
         KEY: ${{ env.SSHKEY }}

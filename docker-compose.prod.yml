@@ -50,10 +50,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cc-ui.entrypoints=https"
-      - "traefik.http.routers.cc-ui.rule=Host(`cloud.arne-kapell.de`)"
-      # - "traefik.http.routers.cc-ui.rule=Host(`cloud.arne-kapell.de`) && PathPrefix(`/cook`)"
-      # - "traefik.http.routers.cc-ui.middlewares=cc-ui-removeprefix"
-      # - "traefik.http.middlewares.cc-ui-removeprefix.stripprefix.prefixes=/cook"
+      # - "traefik.http.routers.cc-ui.rule=Host(`cloud.arne-kapell.de`)"
+      - "traefik.http.routers.cc-ui.rule=Host(`captain-cook.big-sala.me`)"
       - "traefik.http.routers.cc-ui.tls=true"
       - "traefik.http.routers.cc-ui.tls.certresolver=http"
       - "traefik.docker.network=web"
