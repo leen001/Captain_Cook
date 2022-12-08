@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
@@ -43,6 +44,7 @@ class User(Base):
     picture = Column(String(100))
     first_contact = Column(DateTime, default=datetime.utcnow)
     last_contact = Column(DateTime, default=datetime.utcnow)
+    shopping_list = Column(ForeignKey("shopping_lists.id"))
 
     def __init__(self, google_uid, name=None, mail=None, picture=None):
         self.google_uid = google_uid
@@ -130,3 +132,63 @@ class Recipe(Base):
         assert len(RecipeSchema().validate(
             d)) == 0, "RecipeSchema validation failed! " + ", ".join(RecipeSchema().validate(d))
         return d
+
+
+class ListIngredient(Base):
+    __tablename__ = "list_ingredients"
+    id = Column(Integer, primary_key=True)
+    shopping_list_id = Column(Integer, ForeignKey("shopping_lists.id"))
+    name = Column(String(100))
+    quantity = Column(String(50))
+    condition = Column(String(50))
+    icon = Column(String(100))
+
+    def __init__(self, name, quantity="1", condition=None, icon=None):
+        self.name = name
+        self.quantity = quantity
+        self.condition = condition
+        self.icon = icon
+
+    def fromRecipeIngredient(self, recipeIngredient):
+        parts = recipeIngredient.name.split(" ")
+        self.name = " ".join(parts[1:])
+        self.quantity = parts[0]
+        # self.condition = parts[1] # TODO: parse condition
+
+    def asSchemeDict(self):
+        d = {
+            "id": self.id,
+            "name": self.name,
+            "quantity": self.quantity,
+            "condition": self.condition,
+            "icon": self.icon,
+        }
+        # assert len(ListIngredientSchema().validate(
+        #     d)) == 0, "ListIngredientSchema validation failed!"
+        return d
+
+
+class ShoppingList(Base):
+    __tablename__ = "shopping_lists"
+    id = Column(Integer, primary_key=True)
+    user = relationship("User", uselist=False, cascade="all, delete-orphan")
+    ingredients = relationship(
+        lambda: ListIngredient, uselist=True)
+
+    def __init__(self, user: User):
+        self.user = user
+
+    def asSchemeDict(self):
+        d = {
+            "id": self.id,
+            "ingredients": [i.asSchemeDict() for i in self.ingredients],
+        }
+        # assert len(ShoppingListSchema().validate(
+        #     d)) == 0, "ShoppingListSchema validation failed!"
+        return d
+
+    def addIngredient(self, ingredient: ListIngredient):
+        self.ingredients.append(ingredient)
+
+    def removeIngredient(self, ingredient: ListIngredient):
+        self.ingredients.remove(ingredient)
