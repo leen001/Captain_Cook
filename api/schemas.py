@@ -25,7 +25,7 @@ class RecipeSchema(ma.Schema):
     r_nutrition_info = ma.fields.String()
     recipe_servings = ma.fields.Number()
     recipe_yield = ma.fields.String()
-    score = ma.fields.String()
+    score = ma.fields.Int()
 
 
 class UserSchema(ma.Schema):

@@ -15,8 +15,7 @@ Base = declarative_base()
 def init_db(engine: Engine, force: bool = False):
     if force:
         Base.metadata.drop_all(engine)
-    print(
-        f"Creating database tables for models: {Base.metadata.tables.keys()}")
+    print(f"Creating database tables for models: {Base.metadata.tables.keys()}")
     Base.metadata.create_all(engine, checkfirst=bool(not force))
     print("Database tables created")
 
@@ -68,8 +67,7 @@ class User(Base):
             "mail": self.mail,
             "picture": self.picture,
         }
-        assert len(UserSchema().validate(
-            d)) == 0, "UserSchema validation failed!"
+        assert len(UserSchema().validate(d)) == 0, "UserSchema validation failed!"
         return d
 
 
@@ -87,7 +85,19 @@ class Recipe(Base):
     instructions = Column(Text)
     nutrition = Column(String(500))
 
-    def __init__(self, url, name=None, prep_time=None, cook_time=None, total_time=None, servings=None, r_yield=None, ingredients=None, instructions=None, nutrition=None):
+    def __init__(
+        self,
+        url,
+        name=None,
+        prep_time=None,
+        cook_time=None,
+        total_time=None,
+        servings=None,
+        r_yield=None,
+        ingredients=None,
+        instructions=None,
+        nutrition=None,
+    ):
         self.url = url
         self.name = name
         self.prep_time = prep_time
@@ -102,7 +112,7 @@ class Recipe(Base):
 
     def asDictForRecSys(self):
         d = {
-            "id": self.id,
+            "uid": self.id,
             "recipe": self.name,
             "ingredients": self.ingredients,
             "r_direction": self.instructions,
@@ -117,7 +127,7 @@ class Recipe(Base):
 
     def asSchemeDict(self):
         d = {
-            "id": self.id,
+            "uid": self.id,
             "recipe": self.name,
             "ingredients": self.ingredients,
             "r_direction": self.instructions,
@@ -129,8 +139,9 @@ class Recipe(Base):
             "recipe_yield": self.r_yield,
             "score": 0,
         }
-        assert len(RecipeSchema().validate(
-            d)) == 0, "RecipeSchema validation failed! " + ", ".join(RecipeSchema().validate(d))
+        assert (
+            len(RecipeSchema().validate(d)) == 0
+        ), "RecipeSchema validation failed! " + ", ".join(RecipeSchema().validate(d))
         return d
 
 
@@ -172,8 +183,7 @@ class ShoppingList(Base):
     __tablename__ = "shopping_lists"
     id = Column(Integer, primary_key=True)
     user = relationship("User", uselist=False, cascade="all, delete-orphan")
-    ingredients = relationship(
-        lambda: ListIngredient, uselist=True)
+    ingredients = relationship(lambda: ListIngredient, uselist=True)
 
     def __init__(self, user: User):
         self.user = user

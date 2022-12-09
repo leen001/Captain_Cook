@@ -22,7 +22,8 @@ CORS(app)
 
 try:
     engine = sqlalchemy.create_engine(
-        f"mariadb+mariadbconnector://{os.environ.get('DB_USER', 'root')}:{os.environ.get('DB_PASSWORD', 'root')}@{os.environ.get('DB_HOST', 'localhost')}:{int(os.environ.get('DB_PORT', 3306))}/{os.environ.get('DB_DATABASE', 'cookbook')}")
+        f"mariadb+mariadbconnector://{os.environ.get('DB_USER', 'root')}:{os.environ.get('DB_PASSWORD', 'root')}@{os.environ.get('DB_HOST', 'localhost')}:{int(os.environ.get('DB_PORT', 3306))}/{os.environ.get('DB_DATABASE', 'cookbook')}"
+    )
     init_db(engine, force=True)
     db = sqlalchemy.orm.sessionmaker()
     db.configure(bind=engine)
@@ -55,8 +56,7 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(
-        fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -76,10 +76,7 @@ def recommend_recipe(ingredients=list(), count=5):
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
 
     return (
-        {
-            "recipes": recipes,
-            "count": len(recipes)
-        },
+        {"recipes": recipes, "count": len(recipes)},
         200,
     )
 
@@ -99,8 +96,6 @@ docs.register(recipe_by_id)
 
 
 @app.get("/list")
-# Arne stinkt!!! (Finn auch)
-# Nils war hier (Finn auch)
 @authenticated
 def get_list():
     user = g.user
@@ -108,8 +103,7 @@ def get_list():
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
     return (shopping_list.asSchemeDict(), 200)
 
 
@@ -121,10 +115,8 @@ def add_to_list():
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
-    ingredient = ListIngredient.fromRecipeIngredient(
-        request.json.get("ingredient"))
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
+    ingredient = ListIngredient.fromRecipeIngredient(request.json.get("ingredient"))
     db.add(ingredient)
     shopping_list.addIngredient(ingredient)
     db.commit()
@@ -140,10 +132,8 @@ def remove_from_list():
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
-    ingredient = ListIngredient.fromRecipeIngredient(
-        request.json.get("ingredient"))
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
+    ingredient = ListIngredient.fromRecipeIngredient(request.json.get("ingredient"))
     shopping_list.removeIngredient(ingredient)
     db.commit()
     return (shopping_list.asSchemeDict(), 200)
@@ -157,8 +147,7 @@ def clear_list():
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
     shopping_list.clear()
     db.commit()
     return (shopping_list.asSchemeDict(), 200)
