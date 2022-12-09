@@ -1,4 +1,5 @@
 import 'dart:convert';
+//import 'dart:ffi';
 
 import 'package:captain_cook/api.dart';
 import 'package:captain_cook/widgets/IngredientSelector.dart';
@@ -10,6 +11,9 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'states.dart';
+
+const API_BASE_URL = String.fromEnvironment('API_BASE_URL',
+    defaultValue: 'http://localhost:3000');
 
 void main() {
   runApp(MultiProvider(providers: [
@@ -43,6 +47,10 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   bool _loadingCatFact = true;
+
+  //List<Map<String, dynamic>> list = [];
+  List<dynamic> list_ingredients = [];
+  List<dynamic> list_recipes = [];
 
   void _openSettings() {
     showDialog(
@@ -93,73 +101,190 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  Future<CatFact> _getCatFact() async {
-    try {
-      final response = await http.get(Uri.parse('https://catfact.ninja/fact'));
+  // Future<CatFact> _getCatFact() async {
+  //   try {
+  //     final response = await http.get(Uri.parse('https://catfact.ninja/fact'));
 
-      if (response.statusCode == 200) {
-        return CatFact.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception('Failed to load cat fact');
+  //     if (response.statusCode == 200) {
+  //       return CatFact.fromJson(jsonDecode(response.body));
+  //     } else {
+  //       throw Exception('Failed to load cat fact');
+  //     }
+  //   } catch (e) {
+  //     return CatFact("Failed to load cat fact", 0);
+  //   }
+  // }
+
+  Future<List<Recipe>> _getRecipes() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$API_BASE_URL/recipes'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'count': 2,
+          'ingredients': ["tomato"],
+        }),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load recipes');
       }
+      final Map<String, dynamic> json = jsonDecode(response.body);
+      final List<Recipe> recipes = [];
+      for (final recipe in json['recipes']) {
+        recipes.add(Recipe.fromJson(recipe));
+      }
+      return recipes;
     } catch (e) {
-      return CatFact("Failed to load cat fact", 0);
+      print(e);
+      return [];
     }
   }
 
-  Widget _buildCatFactWidget(CatFact catFact) {
-    return Card(
-      elevation: 10,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+  // Widget _buildCatFactWidget(CatFact catFact) {
+  //   return Card(
+  //     elevation: 10,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(15.0),
+  //       child: Column(children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             const Icon(
+  //               MdiIcons.cat,
+  //               size: 30,
+  //               color: Colors.orangeAccent,
+  //             ),
+  //             const SizedBox(
+  //               width: 10,
+  //             ),
+  //             Text(
+  //               "Did you know?",
+  //               style: TextStyle(
+  //                   fontSize: 20,
+  //                   color: Theme.of(context).primaryColor,
+  //                   fontWeight: FontWeight.bold),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(
+  //           height: 10,
+  //         ),
+  //         Text(
+  //           catFact.fact,
+  //           textAlign: TextAlign.center,
+  //           style: const TextStyle(fontSize: 16),
+  //         ),
+  //         const SizedBox(
+  //           height: 20,
+  //         ),
+  //         IconButton(
+  //             onPressed: (_loadingCatFact)
+  //                 ? null
+  //                 : () => setState(() {
+  //                       _loadingCatFact = true;
+  //                     }),
+  //             tooltip: "Get another fact",
+  //             icon: const Icon(MdiIcons.chevronDownCircleOutline))
+  //       ]),
+  //     ),
+  //   );
+  // }
+
+  List<Widget> _buildRecipeWidgets(List<Recipe> recipes) {
+    List<Widget> recipeWidgets = [];
+    for (final recipe in recipes) {
+      print("recipe ${recipe.uid}");
+      recipeWidgets.add(
+        Card(
+            child: SingleChildScrollView(
+          child: Column(
             children: [
-              const Icon(
-                MdiIcons.cat,
-                size: 30,
-                color: Colors.orangeAccent,
-              ),
-              const SizedBox(
-                width: 10,
-              ),
               Text(
-                "Did you know?",
-                style: TextStyle(
-                    fontSize: 20,
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold),
+                recipe.recipe,
+                style: const TextStyle(
+                    fontSize: 30, height: 3, fontWeight: FontWeight.bold),
               ),
+              const Icon(
+                Icons.done_rounded,
+                color: Colors.green,
+                size: 30,
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 2,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (var i = 0; i < recipe.ingredients.length; i++)
+                          ListTile(
+                            title: Text(recipe.ingredients[i]),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child:
+                        //Text(recipe.r_direction),
+                        ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (var i = 0; i < recipe.r_direction.length; i++)
+                          ListTile(
+                            title: Text(recipe.r_direction[i]),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          Text(
-            catFact.fact,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          IconButton(
-              onPressed: (_loadingCatFact)
-                  ? null
-                  : () => setState(() {
-                        _loadingCatFact = true;
-                      }),
-              tooltip: "Get another fact",
-              icon: const Icon(MdiIcons.chevronDownCircleOutline))
-        ]),
-      ),
-    );
+        )),
+      );
+    }
+    print("widget length ${recipeWidgets.length}");
+    return recipeWidgets;
+    // children = <Widget>[
+    //   // for (var i = 0; i < list.length; i++)
+    //   //   ListTile(
+    //   //     title: Text(list[i]),
+    //   //   ),
+    //   const Icon(
+    //     Icons.done_rounded,
+    //     color: Colors.green,
+    //     size: 30,
+    //   ),
+
+    //   ListView(
+    //     shrinkWrap: true,
+    //     children: [
+    //       for (var i = 0; i < list.length; i++)
+    //         ListTile(
+    //           title: Text(list[i]),
+    //         ),
+    //     ],
+    //   ),
+    //   //Text(snapshot.data!.ingredients.split(',').toString())
+    //   //list =(snapshot.data!.ingredients.split(',')),
+    //   //list.forEach((String age) => print(age));
+    // ];
+    // return Card(
+    //     child: Column(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: children,
+    //     ),
+    // );
+    //return Text(snapshot.data!.ingredients);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -181,119 +306,252 @@ class _MainAppState extends State<MainApp> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
-            child: Card(
-              elevation: 10,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Consumer<AvailableIngredients>(
-                  builder: (context, availableIngredients, child) => Center(
-                      child: Text((availableIngredients.length > 0)
-                          ? availableIngredients.all
-                              .map((e) => e.id)
-                              .toList()
-                              .toString()
-                          : "Please select your ingredients")),
-                ),
+            child: SingleChildScrollView(
+              primary: true,
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Consumer<AvailableIngredients>(
+                        builder: (context, availableIngredients, child) =>
+                            Center(
+                          // child: Text((availableIngredients.length > 0)
+                          //     ? availableIngredients.all
+                          //         .map((e) => e.id)
+                          //         .toList()
+                          //         .toString()
+                          //     : "Please select your ingredients")
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 16),
+                            child: TextFormField(
+                              decoration: const InputDecoration(
+                                border: UnderlineInputBorder(),
+                                labelText: 'Enter your ingredients',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  FutureBuilder<List<Recipe>>(
+                    future: _getRecipes(),
+                    builder: (context, snapshot) {
+                      // if (snapshot.hasData) {
+                      //   final children = <Widget>[];
+                      //   for (var i = 0; i < list.length; i++) {
+                      //     children.add(ListTile(
+                      //       title: Text(list[i]),
+                      //     ));
+                      //   }
+                      //   return ListView(
+                      //     shrinkWrap: true,
+                      //     children: children,
+                      //   );
+                      // } else if (snapshot.hasError) {
+                      //   return Text("${snapshot.error}");
+                      // }
+                      // return const LinearProgressIndicator();
+
+                      //List<Widget> children;
+                      if (snapshot.hasData) {
+                        return Column(
+                          // padding: const EdgeInsets.all(8),
+                          children: _buildRecipeWidgets(snapshot.data!),
+                        );
+                        //
+
+                        //return ListView.builder(itemBuilder: _buildRecipeWidget(snapshot.data![))
+
+                        // Recipe recipe = snapshot.data![0];
+                        // return Card(
+                        //     child: SingleChildScrollView(
+                        //   child: Column(
+                        //     children: [
+                        //       Text(
+                        //         recipe.recipe,
+                        //         style: const TextStyle(
+                        //             fontSize: 30,
+                        //             height: 3,
+                        //             fontWeight: FontWeight.bold),
+                        //       ),
+                        //       const Icon(
+                        //         Icons.done_rounded,
+                        //         color: Colors.green,
+                        //         size: 30,
+                        //       ),
+                        //       Row(
+                        //         children: <Widget>[
+                        //           Expanded(
+                        //             flex: 2,
+                        //             child: ListView(
+                        //               shrinkWrap: true,
+                        //               children: [
+                        //                 for (var i = 0;
+                        //                     i < recipe.ingredients.length;
+                        //                     i++)
+                        //                   ListTile(
+                        //                     title: Text(recipe.ingredients[i]),
+                        //                   ),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //           Expanded(
+                        //             flex: 4,
+                        //             child:
+                        //                 //Text(recipe.r_direction),
+                        //                 ListView(
+                        //               shrinkWrap: true,
+                        //               children: [
+                        //                 for (var i = 0;
+                        //                     i < recipe.r_direction.length;
+                        //                     i++)
+                        //                   ListTile(
+                        //                     title: Text(recipe.r_direction[i]),
+                        //                   ),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       )
+                        //     ],
+                        //   ),
+                        // ));
+                        // // children = <Widget>[
+                        // //   // for (var i = 0; i < list.length; i++)
+                        // //   //   ListTile(
+                        // //   //     title: Text(list[i]),
+                        // //   //   ),
+                        // //   const Icon(
+                        // //     Icons.done_rounded,
+                        // //     color: Colors.green,
+                        // //     size: 30,
+                        // //   ),
+
+                        // //   //   ListView(
+                        //   //     shrinkWrap: true,
+                        //   //     children: [
+                        //   //       for (var i = 0; i < list.length; i++)
+                        //   //         ListTile(
+                        //   //           title: Text(list[i]),
+                        //   //         ),
+                        //   //     ],
+                        //   //   ),
+                        //   //   //Text(snapshot.data!.ingredients.split(',').toString())
+                        //   //   //list =(snapshot.data!.ingredients.split(',')),
+                        //   //   //list.forEach((String age) => print(age));
+                        //   // ];
+                        //   // return Card(
+                        //   //     child: Column(
+                        //   //       mainAxisAlignment: MainAxisAlignment.center,
+                        //   //       children: children,
+                        //   //     ),
+                        //   // );
+                        //   //return Text(snapshot.data!.ingredients);
+                        // }
+                      } else if (snapshot.hasError) {
+                        return Text("${snapshot.error}");
+                      }
+                      return const LinearProgressIndicator();
+                    },
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Consumer<AuthenticatedUser>(
+                      builder: (context, googleAuth, child) => Card(
+                          elevation: 10,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: FutureBuilder(
+                              future: googleAuth.isSignedIn,
+                              builder: (context, snapshot) => (snapshot.hasData)
+                                  ? (snapshot.data as bool)
+                                      ? Column(children: [
+                                          FutureBuilder(
+                                            future: googleAuth.user,
+                                            builder: (context, user) =>
+                                                RichText(
+                                              text: TextSpan(
+                                                text: "Logged in as ",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                                children: [
+                                                  (user.hasData &&
+                                                          user.data != null)
+                                                      ? TextSpan(
+                                                          text: (user.data
+                                                                  as GoogleSignInAccount)
+                                                              .displayName,
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold))
+                                                      : const TextSpan(
+                                                          text: "Unknown",
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                await googleAuth.signOut();
+                                              },
+                                              child: const Text("Sign out"))
+                                        ])
+                                      : Column(children: [
+                                          const Text(
+                                            "Login",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.indigo,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                await googleAuth.signIn();
+                                              },
+                                              child: const Text("Sign in")),
+                                          (googleAuth.hasError)
+                                              ? Text(
+                                                  googleAuth.error,
+                                                  style: const TextStyle(
+                                                      color: Colors.red),
+                                                )
+                                              : const SizedBox()
+                                        ])
+                                  : const Center(
+                                      child: SizedBox(
+                                        height: 50,
+                                        width: 50,
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                            ),
+                          )),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            child: Consumer<AuthenticatedUser>(
-              builder: (context, googleAuth, child) => Card(
-                  elevation: 10,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: FutureBuilder(
-                      future: googleAuth.isSignedIn,
-                      builder: (context, snapshot) => (snapshot.hasData)
-                          ? (snapshot.data as bool)
-                              ? Column(children: [
-                                  FutureBuilder(
-                                    future: googleAuth.user,
-                                    builder: (context, user) => RichText(
-                                      text: TextSpan(
-                                        text: "Logged in as ",
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor),
-                                        children: [
-                                          (user.hasData && user.data != null)
-                                              ? TextSpan(
-                                                  text: (user.data
-                                                          as GoogleSignInAccount)
-                                                      .displayName,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold))
-                                              : const TextSpan(
-                                                  text: "Unknown",
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        await googleAuth.signOut();
-                                      },
-                                      child: const Text("Sign out"))
-                                ])
-                              : Column(children: [
-                                  const Text(
-                                    "Login",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.indigo,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        await googleAuth.signIn();
-                                      },
-                                      child: const Text("Sign in")),
-                                  (googleAuth.hasError)
-                                      ? Text(
-                                          googleAuth.error,
-                                          style: const TextStyle(
-                                              color: Colors.red),
-                                        )
-                                      : const SizedBox()
-                                ])
-                          : const Center(
-                              child: SizedBox(
-                                height: 50,
-                                width: 50,
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                    ),
-                  )),
-            ),
-          ),
-          FutureBuilder<CatFact>(
-            future: _getCatFact(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                _loadingCatFact = false;
-                return _buildCatFactWidget(snapshot.data!);
-              } else if (snapshot.hasError) {
-                _loadingCatFact = false;
-                return Text("${snapshot.error}");
-              }
-              // By default, show a loading spinner.
-              _loadingCatFact = true;
-              return const LinearProgressIndicator();
-            },
-          ),
+          // Card(
+          //   child:
+
+          // ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -310,32 +568,50 @@ class _MainAppState extends State<MainApp> {
 class RecipeList extends StatefulWidget {
   const RecipeList({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
   State<RecipeList> createState() => _RecipeListState();
 }
 
+// Future<RecipeTest> _getRecipes() async {
+//     try {
+//       _counter = 3;
+
+//       ingredients = ["onions"];
+
+//       http.post(
+//         Uri.parse('http:/localhost:60034/recipes'),
+//         headers: <String, String>{
+//           'Content-Type': 'application/json; charset=UTF-8',
+//         },
+//         body: jsonEncode({
+//           'counter': _counter,
+//           'ingredients': ingredients,
+//         }),
+//       );
+
+//       final response = await http.get(
+//         Uri.parse('http:/localhost:60034/recipes'),
+//       );
+
+//       if (response.statusCode == 200) {
+//         return RecipeTest.fromJson(jsonDecode(response.body));
+//       } else {
+//         throw Exception('Failed to load cat fact');
+//       }
+//     } catch (e) {
+//       return RecipeTest("Failed to load recipes");
+//     }
+//   }
+
 // UNUSED!!!
 class _RecipeListState extends State<RecipeList> {
   int _counter = 0;
+  List<String> ingredients = [];
 
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
     });
   }
@@ -348,16 +624,8 @@ class _RecipeListState extends State<RecipeList> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the RecipeList object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
         actions: [
           IconButton(
