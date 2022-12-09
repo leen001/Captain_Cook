@@ -20,18 +20,22 @@ def init_db(engine: Engine, force: bool = False):
     print("Database tables created")
 
 
-def insert_from_csv(session: Session, csv_file: str, model: Base):
+def insert_from_csv(
+    session: Session, csv_file: str, model: Base, overwrite: bool = False
+):
     print(f"Inserting data from {csv_file} into {model.__tablename__}...")
+    total = 0
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         reader.__next__()
-        total = 0
         for row in reader:
             el = model(*row)
             session.add(el)
             total += 1
-    session.commit()
-    print(f"Data inserted ({total} rows)")
+    if total > 0 and (overwrite or session.query(model).count() < total):
+        session.commit()
+        print(f"Data inserted ({total} rows)")
+    print(f"Data already inserted ({total} rows)")
 
 
 class User(Base):
