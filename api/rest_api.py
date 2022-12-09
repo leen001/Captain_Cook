@@ -16,6 +16,9 @@ from schemas import (
     RecipeSchema,
     RecipeRecommendationSchema,
     UserSchema,
+    ShoppingListSchema,
+    IngredientSchema,
+    IngredientInputSchema,
 )
 import recommendation_system as rs
 
@@ -31,7 +34,7 @@ try:
     engine = sqlalchemy.create_engine(
         f"mariadb+mariadbconnector://{os.environ.get('DB_USER', 'root')}:{os.environ.get('DB_PASSWORD', 'root')}@{os.environ.get('DB_HOST', 'localhost')}:{int(os.environ.get('DB_PORT', 3306))}/{os.environ.get('DB_DATABASE', 'cookbook')}"
     )
-    init_db(engine, force=True)
+    init_db(engine, force=os.environ.get("DB_FORCE_RECREATE", False))
     db = sqlalchemy.orm.sessionmaker()
     db.configure(bind=engine)
     db = db()
@@ -45,7 +48,7 @@ except sqlalchemy.exc.OperationalError as e:
 @marshal_with(UserSchema, code=200, description="Authenticated user")
 @authenticated
 def auth_status():
-    return (g.user.asSchemeDict(), 200)
+    return (g.user.asSchemaDict(), 200)
 
 
 docs.register(auth_status)
@@ -61,7 +64,8 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(
+        fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -77,7 +81,7 @@ def recommend_recipe(ingredients=list(), count=5):
     if count < 1:
         return ({"error": "Please provide a positive number for n."}, 400)
     db_recipes = db.query(Recipe).all()
-    recipes_as_dicts = [recipe.asSchemeDict() for recipe in db_recipes]
+    recipes_as_dicts = [recipe.asSchemaDict() for recipe in db_recipes]
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
 
     return (
@@ -93,73 +97,93 @@ def recipe_by_id(recipe_id):
     recipe = db.query(Recipe).filter_by(id=recipe_id).first()
     if not recipe:
         return ({"error": "Recipe not found"}, 404)
-    return (recipe.asSchemeDict(), 200)
+    return (recipe.asSchemaDict(), 200)
 
 
 docs.register(recommend_recipe)
 docs.register(recipe_by_id)
 
 
-@app.get("/list")
-@authenticated
-def get_list():
-    user = g.user
+def get_or_create_shopping_list(user):
     if not user.shopping_list:
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
-    return (shopping_list.asSchemeDict(), 200)
+    shopping_list = db.query(ShoppingList).filter_by(
+        id=user.shopping_list).first()
+    return shopping_list
+
+
+@app.get("/list")
+@marshal_with(ShoppingListSchema, code=200)
+@authenticated
+def get_list():
+    shopping_list = get_or_create_shopping_list(g.user)
+    return (shopping_list.asSchemaDict(), 200)
 
 
 @app.post("/list/item")
+@use_kwargs({"ingredient": fields.Nested(IngredientInputSchema)})
+@marshal_with(ShoppingListSchema, code=200)
 @authenticated
-def add_to_list():
-    user = g.user
-    if not user.shopping_list:
-        new_list = ShoppingList(user)
-        db.add(new_list)
-        db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
-    ingredient = ListIngredient.fromRecipeIngredient(request.json.get("ingredient"))
-    db.add(ingredient)
-    shopping_list.addIngredient(ingredient)
+def add_to_list(ingredient=dict()):
+    shopping_list = get_or_create_shopping_list(g.user)
+    db_ingredient = ListIngredient(**ingredient)
+    db.add(db_ingredient)
+    shopping_list.addIngredient(db_ingredient)
     db.commit()
-    shopping_list.update()
-    return (shopping_list.asSchemeDict(), 200)
+    return (shopping_list.asSchemaDict(), 200)
+
+
+@app.post("/list/recipe")
+@use_kwargs({"recipe_id": fields.Int()})
+@marshal_with(ShoppingListSchema, code=200)
+@authenticated
+def add_recipe_to_list(recipe_id: int):
+    shopping_list = get_or_create_shopping_list(g.user)
+    recipe = db.query(Recipe).filter_by(
+        id=recipe_id).first()
+    if not recipe:
+        return ({"error": "Recipe not found"}, 404)
+    ingredients = shopping_list.addRecipe(recipe)
+    for ingredient in ingredients:
+        db.add(ingredient)
+    db.commit()
+    return (shopping_list.asSchemaDict(), 200)
 
 
 @app.delete("/list/item")
+@use_kwargs({"ingredient_id": fields.Int()})
+@marshal_with(ShoppingListSchema, code=200)
+@marshal_with(BasicError, code=404, description="Ingredient not found")
 @authenticated
-def remove_from_list():
-    user = g.user
-    if not user.shopping_list:
-        new_list = ShoppingList(user)
-        db.add(new_list)
-        db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
-    ingredient = ListIngredient.fromRecipeIngredient(request.json.get("ingredient"))
+def remove_from_list(ingredient_id: int):
+    shopping_list = get_or_create_shopping_list(g.user)
+    ingredient = db.query(ListIngredient).filter_by(
+        id=ingredient_id).first()
+    if not ingredient or ingredient not in shopping_list.ingredients:
+        return ({"error": "Ingredient not found"}, 404)
     shopping_list.removeIngredient(ingredient)
+    db.delete(ingredient)
     db.commit()
-    return (shopping_list.asSchemeDict(), 200)
+    return (shopping_list.asSchemaDict(), 200)
 
 
 @app.delete("/list")
+@marshal_with(ShoppingListSchema, code=200)
 @authenticated
 def clear_list():
-    user = g.user
-    if not user.shopping_list:
-        new_list = ShoppingList(user)
-        db.add(new_list)
-        db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
-    shopping_list.clear()
+    shopping_list = get_or_create_shopping_list(g.user)
+    ingredients = shopping_list.clearIngredients()
+    for ingredient in ingredients:
+        db.delete(ingredient)
     db.commit()
-    return (shopping_list.asSchemeDict(), 200)
+    return (shopping_list.asSchemaDict(), 200)
 
 
 docs.register(get_list)
 docs.register(add_to_list)
+docs.register(add_recipe_to_list)
 docs.register(remove_from_list)
 docs.register(clear_list)
 

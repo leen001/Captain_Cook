@@ -15,17 +15,16 @@ class BasicSuccess(ma.Schema):
 
 
 class RecipeSchema(ma.Schema):
-    uid = ma.fields.Int()
+    id = ma.fields.Int()
     recipe = ma.fields.String()
-    ingredients = ma.fields.String()
-    r_direction = ma.fields.String()
     prep_time = ma.fields.String()
     cooking_time = ma.fields.String()
     total_time = ma.fields.String()
-    r_nutrition_info = ma.fields.String()
     recipe_servings = ma.fields.Number()
     recipe_yield = ma.fields.String()
-    score = ma.fields.Int()
+    ingredients = ma.fields.String()
+    r_direction = ma.fields.String()
+    r_nutrition_info = ma.fields.String()
 
 
 class RecipeRecommendationSchema(RecipeSchema):
@@ -33,7 +32,30 @@ class RecipeRecommendationSchema(RecipeSchema):
 
 
 class UserSchema(ma.Schema):
-    uid = ma.fields.Integer()
+    id = ma.fields.Integer()
     name = ma.fields.String(allow_none=True)
     mail = ma.fields.String()
     picture = ma.fields.String(allow_none=True)
+
+
+class IngredientInputSchema(ma.Schema):
+    name = ma.fields.String()
+    quantity = ma.fields.String(allow_none=True)
+    unit = ma.fields.String(allow_none=True)
+    condition = ma.fields.String(allow_none=True)
+    icon = ma.fields.String(allow_none=True)
+
+
+class IngredientSchema(IngredientInputSchema):
+    id = ma.fields.Integer()
+
+
+class ShoppingListSchema(ma.Schema):
+    id = ma.fields.Integer()
+    ingredients = ma.fields.Nested(
+        IngredientSchema, many=True, allow_none=True)
+
+
+def validateSchema(schema: ma.Schema, data: dict):
+    assert len(schema().validate(
+        data)) == 0, f"{schema.__name__} validation failed! ({', '.join(schema().validate(data))})"

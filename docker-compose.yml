@@ -28,9 +28,9 @@ services:
       - db
     restart: unless-stopped
     environment:
-      # PORT: 3000
       DEBUG: True
-      # SECRET_KEY:
+      # PORT: 3000
+      # DB_FORCE_RECREATE: True
       DB_HOST: db
       DB_USER: mariadb
       DB_PASSWORD: mariadb

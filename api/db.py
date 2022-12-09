@@ -1,3 +1,6 @@
+import re
+from unicodedata import *
+from fractions import Fraction as F
 import csv
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
@@ -5,9 +8,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
-from schemas import UserSchema, RecipeSchema
+from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, validateSchema
 
 from schemas import UserSchema
+
+from parse_ingredients import parse_ingredient
 
 Base = declarative_base()
 
@@ -15,7 +20,8 @@ Base = declarative_base()
 def init_db(engine: Engine, force: bool = False):
     if force:
         Base.metadata.drop_all(engine)
-    print(f"Creating database tables for models: {Base.metadata.tables.keys()}")
+    print(
+        f"Creating database tables for models: {Base.metadata.tables.keys()}")
     Base.metadata.create_all(engine, checkfirst=bool(not force))
     print("Database tables created")
 
@@ -24,20 +30,22 @@ def insert_from_csv(
     session: Session, csv_file: str, model: Base, overwrite: bool = False
 ):
     print(f"Inserting data from {csv_file} into {model.__tablename__}...")
-    total = 0
+    items = list()
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         reader.__next__()
         for row in reader:
             el = model(*row)
-            session.add(el)
-            total += 1
-    # has_more = session.query(model).count() > total
-    if total > 0 or overwrite:
+            items.append(el)
+    existing = session.query(model).all()
+    if overwrite or len(items) > len(existing):
+        session.add_all(items)
         session.commit()
-        print(f"Data inserted ({total} rows)")
+        print(f"Inserted {len(items)} items into {model.__tablename__}")
     else:
-        print(f"Data already inserted ({total} rows)")
+        print(
+            f"Skipped inserting {len(items)} items into {model.__tablename__} because there are already {len(existing)} items in the database"
+        )
 
 
 class User(Base):
@@ -66,73 +74,60 @@ class User(Base):
         session.commit()
         return self
 
-    def asSchemeDict(self):
-        d = {
-            "uid": self.id,
-            "name": self.name,
-            "mail": self.mail,
-            "picture": self.picture,
-        }
-        assert len(UserSchema().validate(d)) == 0, "UserSchema validation failed!"
-        return d
+    def asSchemaDict(self):
+        return UserSchema().dump(self)
 
 
 class Recipe(Base):
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True)
     url = Column(String(200), unique=True)
-    name = Column(String(100))
+    recipe = Column(String(100))
     prep_time = Column(String(50))
-    cook_time = Column(String(50))
+    cooking_time = Column(String(50))
     total_time = Column(String(50))
-    servings = Column(Integer)
-    r_yield = Column(String(50))
+    recipe_servings = Column(Integer)
+    recipe_yield = Column(String(50))
     ingredients = Column(String(1000))
-    instructions = Column(Text)
-    nutrition = Column(String(500))
+    r_direction = Column(Text)
+    r_nutrition_info = Column(String(500))
 
     def __init__(
         self,
         url,
-        name=None,
-        prep_time=None,
-        cook_time=None,
-        total_time=None,
-        servings=None,
-        r_yield=None,
-        ingredients=None,
-        instructions=None,
-        nutrition=None,
+        recipe,
+        prep_time,
+        cooking_time,
+        total_time,
+        recipe_servings,
+        recipe_yield,
+        ingredients,
+        r_direction,
+        r_nutrition_info
     ):
         self.url = url
-        self.name = name
+        self.recipe = recipe
         self.prep_time = prep_time
-        self.cook_time = cook_time
+        self.cooking_time = cooking_time
         self.total_time = total_time
-        # print(f"servings: {servings}", int(servings), type(int(servings)))
-        self.servings = servings if len(servings) > 0 else 0
-        self.r_yield = r_yield
+        self.recipe_servings = recipe_servings if len(
+            recipe_servings) > 0 else 0
+        self.recipe_yield = recipe_yield
         self.ingredients = ingredients
-        self.instructions = instructions
-        self.nutrition = nutrition
+        self.r_direction = r_direction
+        self.r_nutrition_info = r_nutrition_info
 
-    def asSchemeDict(self):
-        d = {
-            "uid": self.id,
-            "recipe": self.name,
-            "ingredients": self.ingredients,
-            "r_direction": self.instructions,
-            "prep_time": self.prep_time,
-            "cooking_time": self.cook_time,
-            "total_time": self.total_time,
-            "r_nutrition_info": self.nutrition,
-            "recipe_servings": self.servings,
-            "recipe_yield": self.r_yield,
-        }
-        assert (
-            len(RecipeSchema().validate(d)) == 0
-        ), "RecipeSchema validation failed! " + ", ".join(RecipeSchema().validate(d))
-        return d
+    def asSchemaDict(self):
+        return RecipeSchema().dump(self)
+
+
+def replaceVulgarFractions(s: str):
+    def f(s): return F(s.translate(
+        {8260: 47, 8543: "1/"}))if s[1:]else F(numeric(s)).limit_denominator()
+    to_replace = re.findall(r"[\u2150-\u215E\u00BC-\u00BE]", s)
+    for r in to_replace:
+        s = s.replace(r, str(f(r)))
+    return s
 
 
 class ListIngredient(Base):
@@ -141,32 +136,28 @@ class ListIngredient(Base):
     shopping_list_id = Column(Integer, ForeignKey("shopping_lists.id"))
     name = Column(String(100))
     quantity = Column(String(50))
+    unit = Column(String(50))
     condition = Column(String(50))
     icon = Column(String(100))
 
-    def __init__(self, name, quantity="1", condition=None, icon=None):
+    def __init__(self, name="surprise", quantity=0, unit=None, condition=None, icon=None):
         self.name = name
         self.quantity = quantity
+        self.unit = unit
         self.condition = condition
         self.icon = icon
 
-    def fromRecipeIngredient(self, recipeIngredient):
-        parts = recipeIngredient.name.split(" ")
-        self.name = " ".join(parts[1:])
-        self.quantity = parts[0]
-        # self.condition = parts[1] # TODO: parse condition
+    def fromRecipeIngredient(self, recipeIngredient: str):
+        safe_for_parse = replaceVulgarFractions(recipeIngredient)
+        parsed = parse_ingredient(safe_for_parse)
+        self.name = parsed.name or "surprise"
+        self.quantity = parsed.quantity or 0
+        self.unit = parsed.unit or None
+        self.condition = parsed.comment or None
+        return self
 
-    def asSchemeDict(self):
-        d = {
-            "id": self.id,
-            "name": self.name,
-            "quantity": self.quantity,
-            "condition": self.condition,
-            "icon": self.icon,
-        }
-        # assert len(ListIngredientSchema().validate(
-        #     d)) == 0, "ListIngredientSchema validation failed!"
-        return d
+    def asSchemaDict(self):
+        return IngredientSchema().dump(self)
 
 
 class ShoppingList(Base):
@@ -178,17 +169,27 @@ class ShoppingList(Base):
     def __init__(self, user: User):
         self.user = user
 
-    def asSchemeDict(self):
-        d = {
-            "id": self.id,
-            "ingredients": [i.asSchemeDict() for i in self.ingredients],
-        }
-        # assert len(ShoppingListSchema().validate(
-        #     d)) == 0, "ShoppingListSchema validation failed!"
-        return d
+    def asSchemaDict(self):
+        shopping_list = ShoppingListSchema().dump(self)
+        shopping_list["ingredients"] = [i.asSchemaDict()
+                                        for i in self.ingredients]
+        return shopping_list
 
     def addIngredient(self, ingredient: ListIngredient):
         self.ingredients.append(ingredient)
 
+    def addRecipe(self, recipe: Recipe) -> list[ListIngredient]:
+        ingredients = list()
+        for i in recipe.ingredients[2:-2].split("', '"):
+            ingredients.append(ListIngredient().fromRecipeIngredient(i))
+            self.addIngredient(ingredients[-1])
+        return ingredients
+
     def removeIngredient(self, ingredient: ListIngredient):
         self.ingredients.remove(ingredient)
+
+    def clearIngredients(self):
+        ingredients = self.ingredients
+        for i in ingredients:
+            self.removeIngredient(i)
+        return ingredients

@@ -25,12 +25,14 @@ def get_recommendations(n, scores, recipes_as_dict):
     top = df_recipes.sort_values(by="score", ascending=False).head(n)
     # return top recipes as dicts
     recipes = top.to_dict("records")
-    for recipe in recipes:
-        assert (
-            len(RecipeRecommendationSchema().validate(recipe)) == 0
-        ), "Invalid recipe schema: " + ", ".join(
-            RecipeRecommendationSchema().validate(recipe)
-        )
+    # validate schema
+    recipes = RecipeRecommendationSchema(many=True).load(recipes)
+    # for recipe in recipes:
+    #     assert (
+    #         len(RecipeRecommendationSchema().validate(recipe)) == 0
+    #     ), "Invalid recipe schema: " + ", ".join(
+    #         RecipeRecommendationSchema().validate(recipe)
+    #     )
     return recipes
 
 
