@@ -28,6 +28,10 @@ class RecipeSchema(ma.Schema):
     score = ma.fields.Int()
 
 
+class RecipeRecommendationSchema(RecipeSchema):
+    score = ma.fields.Int()
+
+
 class UserSchema(ma.Schema):
     uid = ma.fields.Integer()
     name = ma.fields.String(allow_none=True)

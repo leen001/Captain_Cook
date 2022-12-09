@@ -110,21 +110,6 @@ class Recipe(Base):
         self.instructions = instructions
         self.nutrition = nutrition
 
-    def asDictForRecSys(self):
-        d = {
-            "uid": self.id,
-            "recipe": self.name,
-            "ingredients": self.ingredients,
-            "r_direction": self.instructions,
-            "prep_time": self.prep_time,
-            "cooking_time": self.cook_time,
-            "total_time": self.total_time,
-            "r_nutrition_info": self.nutrition,
-            "recipe_servings": self.servings,
-            "recipe_yield": self.r_yield,
-        }
-        return d
-
     def asSchemeDict(self):
         d = {
             "uid": self.id,
@@ -137,7 +122,6 @@ class Recipe(Base):
             "r_nutrition_info": self.nutrition,
             "recipe_servings": self.servings,
             "recipe_yield": self.r_yield,
-            "score": 0,
         }
         assert (
             len(RecipeSchema().validate(d)) == 0

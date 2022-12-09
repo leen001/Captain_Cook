@@ -9,7 +9,14 @@ from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
 from middlewares import authenticated
 from db import User, Recipe, ShoppingList, ListIngredient, init_db, insert_from_csv
 
-from schemas import BasicError, BasicSuccess, AuthError, RecipeSchema, UserSchema
+from schemas import (
+    BasicError,
+    BasicSuccess,
+    AuthError,
+    RecipeSchema,
+    RecipeRecommendationSchema,
+    UserSchema,
+)
 import recommendation_system as rs
 
 
@@ -60,7 +67,7 @@ def hello():
 )
 @marshal_with(
     Schema.from_dict(
-        {"recipes": fields.Nested(RecipeSchema, many=True)},
+        {"recipes": fields.Nested(RecipeRecommendationSchema, many=True)},
         name="RecipeRecommendations",
     ),
     code=200,
@@ -72,7 +79,7 @@ def recommend_recipe(ingredients=list(), count=5):
     if count < 1:
         return ({"error": "Please provide a positive number for n."}, 400)
     db_recipes = db.query(Recipe).all()
-    recipes_as_dicts = [recipe.asDictForRecSys() for recipe in db_recipes]
+    recipes_as_dicts = [recipe.asSchemeDict() for recipe in db_recipes]
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
 
     return (

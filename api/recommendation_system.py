@@ -6,7 +6,7 @@ import unidecode
 import ast
 import os
 
-from schemas import RecipeSchema
+from schemas import RecipeRecommendationSchema
 
 fileDir = os.path.dirname(os.path.realpath("__file__"))
 # filename = os.path.join(fileDir, 'inputData/recipe_details.csv')
@@ -27,8 +27,10 @@ def get_recommendations(n, scores, recipes_as_dict):
     recipes = top.to_dict("records")
     for recipe in recipes:
         assert (
-            len(RecipeSchema().validate(recipe)) == 0
-        ), "Invalid recipe schema: " + ", ".join(RecipeSchema().validate(recipe))
+            len(RecipeRecommendationSchema().validate(recipe)) == 0
+        ), "Invalid recipe schema: " + ", ".join(
+            RecipeRecommendationSchema().validate(recipe)
+        )
     return recipes
 
 
