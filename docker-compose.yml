@@ -6,6 +6,7 @@ services:
       MYSQL_DATABASE: cookbook
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: mariadb
+    restart: unless-stopped
   adminer:
     profiles:
       - full
@@ -25,6 +26,7 @@ services:
       - 3000:3000
     depends_on:
       - db
+    restart: unless-stopped
     environment:
       # PORT: 3000
       # DEBUG: True
@@ -43,6 +45,7 @@ services:
       - 8080:80
     depends_on:
       - api
+    restart: unless-stopped
     environment:
       API_HOST: api
       API_PORT: 3000
@@ -54,7 +57,7 @@ services:
       - sonar
     image: sonarsource/sonar-scanner-cli
     environment:
-      SONAR_HOST_URL: "http://localhost:9000"
+      SONAR_HOST_URL: "https://sonarqube.big-sala.me"
       SONAR_LOGIN: "sqp_6f984a61341493c85402c31cbd142b46eb1b21d8"
       SONAR_SCANNER_OPTS: "-Dsonar.projectKey=captain-cook"
     volumes:
