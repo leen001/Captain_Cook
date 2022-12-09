@@ -6,6 +6,5 @@ WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-compile -r requirements.txt
 COPY . /app
-ENV DEBUG=True
 ENTRYPOINT [ "python" ]
 CMD ["rest_api.py" ]

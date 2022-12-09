@@ -167,11 +167,13 @@ docs.register(clear_list)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    app.run(
-        debug=bool(os.environ.get("DEBUG", True)),
-        host="0.0.0.0",
-        port=port,
-        # ssl_context="adhoc",
-    )
+    if os.environ.get("DEBUG", False):
+        app.run(debug=True, host="0.0.0.0", port=port)
+    else:
+        app.run(
+            host="0.0.0.0",
+            port=port,
+            # ssl_context="adhoc",
+        )
     print("Closing db connection...")
     db.close()
