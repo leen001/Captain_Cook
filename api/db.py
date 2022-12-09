@@ -32,10 +32,12 @@ def insert_from_csv(
             el = model(*row)
             session.add(el)
             total += 1
-    if total > 0 and (overwrite or session.query(model).count() < total):
+    # has_more = session.query(model).count() > total
+    if total > 0 or overwrite:
         session.commit()
         print(f"Data inserted ({total} rows)")
-    print(f"Data already inserted ({total} rows)")
+    else:
+        print(f"Data already inserted ({total} rows)")
 
 
 class User(Base):

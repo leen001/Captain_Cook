@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
     environment:
       # PORT: 3000
-      # DEBUG: False
+      DEBUG: True
       # SECRET_KEY:
       DB_HOST: db
       DB_USER: mariadb

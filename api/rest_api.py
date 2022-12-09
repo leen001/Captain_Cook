@@ -40,8 +40,6 @@ except sqlalchemy.exc.OperationalError as e:
     print(f"Error connecting to MariaDB: {e}")
     sys.exit(1)
 
-insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
-
 
 @app.get("/auth/status")
 @marshal_with(UserSchema, code=200, description="Authenticated user")
@@ -166,6 +164,8 @@ docs.register(remove_from_list)
 docs.register(clear_list)
 
 if __name__ == "__main__":
+    insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
+
     port = int(os.environ.get("PORT", 3000))
     if os.environ.get("DEBUG", False):
         app.run(debug=True, host="0.0.0.0", port=port)
