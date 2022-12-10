@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb
+    image: docker.io/mariadb
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: cookbook
@@ -13,7 +13,7 @@ services:
     profiles:
       - full
       - adminer
-    image: adminer
+    image: docker.io/adminer
     ports:
       - 3001:8080
     environment:

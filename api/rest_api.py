@@ -64,8 +64,7 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(
-        fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -83,7 +82,6 @@ def recommend_recipe(ingredients=list(), count=5):
     db_recipes = db.query(Recipe).all()
     recipes_as_dicts = [recipe.asSchemaDict() for recipe in db_recipes]
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
-
     return (
         {"recipes": recipes, "count": len(recipes)},
         200,
@@ -109,8 +107,7 @@ def get_or_create_shopping_list(user):
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
     return shopping_list
 
 
@@ -141,8 +138,7 @@ def add_to_list(ingredient=dict()):
 @authenticated
 def add_recipe_to_list(recipe_id: int):
     shopping_list = get_or_create_shopping_list(g.user)
-    recipe = db.query(Recipe).filter_by(
-        id=recipe_id).first()
+    recipe = db.query(Recipe).filter_by(id=recipe_id).first()
     if not recipe:
         return ({"error": "Recipe not found"}, 404)
     ingredients = shopping_list.addRecipe(recipe)
@@ -159,8 +155,7 @@ def add_recipe_to_list(recipe_id: int):
 @authenticated
 def remove_from_list(ingredient_id: int):
     shopping_list = get_or_create_shopping_list(g.user)
-    ingredient = db.query(ListIngredient).filter_by(
-        id=ingredient_id).first()
+    ingredient = db.query(ListIngredient).filter_by(id=ingredient_id).first()
     if not ingredient or ingredient not in shopping_list.ingredients:
         return ({"error": "Ingredient not found"}, 404)
     shopping_list.removeIngredient(ingredient)
