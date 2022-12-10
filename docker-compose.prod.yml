@@ -6,6 +6,9 @@ services:
       MYSQL_DATABASE: cookbook
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: mariadb
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
   # adminer:
   #   image: adminer
   #   ports:
@@ -56,6 +59,9 @@ services:
       - "traefik.http.routers.cc-ui.tls.certresolver=http"
       - "traefik.docker.network=web"
 
+volumes:
+  db_data:
+    driver: local
 networks:
   web:
     external: true
