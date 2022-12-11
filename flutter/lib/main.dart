@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:captain_cook/api.dart';
 import 'package:captain_cook/widgets/IngredientSelector.dart';
 import 'package:captain_cook/widgets/SearchBar.dart';
+import 'package:captain_cook/widgets/Shoppinglist.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
@@ -101,19 +102,12 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // Future<CatFact> _getCatFact() async {
-  //   try {
-  //     final response = await http.get(Uri.parse('https://catfact.ninja/fact'));
-
-  //     if (response.statusCode == 200) {
-  //       return CatFact.fromJson(jsonDecode(response.body));
-  //     } else {
-  //       throw Exception('Failed to load cat fact');
-  //     }
-  //   } catch (e) {
-  //     return CatFact("Failed to load cat fact", 0);
-  //   }
-  // }
+    void _openshoppinglist() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Shoppinglist( name: 'test', checked: false)),
+    );
+  }
 
   Future<List<Recipe>> _getRecipes() async {
     try {
@@ -124,7 +118,7 @@ class _MainAppState extends State<MainApp> {
         },
         body: jsonEncode({
           'count': 2,
-          'ingredients': ["tomato"],
+          'ingredients': [""],
         }),
       );
       if (response.statusCode != 200) {
@@ -195,7 +189,7 @@ class _MainAppState extends State<MainApp> {
   List<Widget> _buildRecipeWidgets(List<Recipe> recipes) {
     List<Widget> recipeWidgets = [];
     for (final recipe in recipes) {
-      print("recipe ${recipe.uid}");
+      //print("recipe ${recipe.uid}");
       recipeWidgets.add(
         Card(
             child: SingleChildScrollView(
@@ -329,7 +323,7 @@ class _MainAppState extends State<MainApp> {
                             child: TextFormField(
                               decoration: const InputDecoration(
                                 border: UnderlineInputBorder(),
-                                labelText: 'Enter your ingredients',
+                                labelText: 'Search Recipe',
                               ),
                             ),
                           ),
@@ -554,13 +548,28 @@ class _MainAppState extends State<MainApp> {
           // ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+      FloatingActionButton(
         onPressed: _openIngredientSelector,
         tooltip: 'Select ingredients',
         heroTag: "ingredient_selector_open",
         isExtended: true,
-        child: const Icon(Icons.playlist_add_check),
+        child: const Icon(Icons.check_box),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      SizedBox(
+        height: 10,
+      ),
+      FloatingActionButton(
+        onPressed: _openshoppinglist,
+        tooltip: 'Shopping List',
+        heroTag: "shopping_list_open",
+        isExtended: true,
+        child: const Icon(Icons.playlist_add_check),
+      ),
+      ]
+      )
     );
   }
 }

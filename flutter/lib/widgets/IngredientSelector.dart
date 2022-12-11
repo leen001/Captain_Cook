@@ -1,8 +1,10 @@
+import 'package:captain_cook/widgets/Receipes_SelectedIngredients.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../states.dart';
+
 
 class IngredientSelector extends StatefulWidget {
   IngredientSelector({Key? key}) : super(key: key);
@@ -12,9 +14,22 @@ class IngredientSelector extends StatefulWidget {
 }
 
 class _IngredientSelectorState extends State<IngredientSelector> {
+  
+  // void convert(List<String> args) {
+  // final data = _fast_csv.parse('selectableIngred.csv');
+  // final keys = data.first;
+  // final list = data.skip(1).map((e) => Map.fromIterables(keys, e)).toList();
+  // print(list.first);
+  // print(list[1]['Name']);
+  // }
+
   bool _loadedIngredients = false;
-  final List<SelectableIngredient> _ingredients = [
+
+  static List<String> fruitname = ["Apple","Banana","Mango","Orange"];
+
+  final List<SelectableIngredient> _ingredients =  [
     SelectableIngredient("Apple", "apple", icon: const Icon(MdiIcons.tree)),
+    SelectableIngredient("Tomato", "apple"),
   ];
   List<Ingredient> _selectedIngredients() {
     return _ingredients
@@ -27,7 +42,8 @@ class _IngredientSelectorState extends State<IngredientSelector> {
   void _saveSelection(context) {
     Provider.of<AvailableIngredients>(context, listen: false)
         .setAll(_selectedIngredients());
-    Navigator.pop(context);
+    Navigator.push(context,
+      MaterialPageRoute(builder: (context) => Receipes_SelectedIngredients()),);
   }
 
   List<Widget> _ingredientsFactory(AvailableIngredients availableIngredients) {
