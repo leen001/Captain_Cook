@@ -17,7 +17,7 @@ class _ShoppinglistState extends State<Shoppinglist> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Todo list'),
+        title: new Text('Shopping List'),
       ),
       body: ListView(
         padding: EdgeInsets.symmetric(vertical: 8.0),
