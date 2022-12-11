@@ -33,20 +33,21 @@ class Recipe {
   final String recipe_yield;
   final int score;
   final String total_time;
-  final int uid;
+  //final int uid;
 
   Recipe(
-      this.cooking_time,
-      this.ingredients,
-      this.prep_time,
-      this.r_direction,
-      this.r_nutrition_info,
-      this.recipe,
-      this.recipe_servings,
-      this.recipe_yield,
-      this.score,
-      this.total_time,
-      this.uid);
+    this.cooking_time,
+    this.ingredients,
+    this.prep_time,
+    this.r_direction,
+    this.r_nutrition_info,
+    this.recipe,
+    this.recipe_servings,
+    this.recipe_yield,
+    this.score,
+    this.total_time,
+    //this.uid
+  );
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     String ingredients = json['ingredients'];
@@ -72,7 +73,7 @@ class Recipe {
       json['recipe_yield'],
       json['score'],
       json['total_time'],
-      json['uid'],
+      //json['uid'],
     );
   }
 }
