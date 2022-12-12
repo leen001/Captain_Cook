@@ -3,12 +3,12 @@ from unicodedata import *
 from fractions import Fraction as F
 import csv
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
-from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, validateSchema
+from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, RatingSchema, validateSchema
 
 from schemas import UserSchema
 
@@ -78,6 +78,24 @@ class User(Base):
         return UserSchema().dump(self)
 
 
+class Rating(Base):
+    __tablename__ = "ratings"
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    rating = Column(Integer)
+    comment = Column(String(500))
+
+    def __init__(self, recipe_id, user_id, rating, comment=None):
+        self.recipe_id = recipe_id
+        self.user_id = user_id
+        self.rating = rating
+        self.comment = comment
+
+    def asSchemaDict(self):
+        return RatingSchema().dump(self)
+
+
 class Recipe(Base):
     __tablename__ = "recipes"
     id = Column(Integer, primary_key=True)
@@ -91,6 +109,8 @@ class Recipe(Base):
     ingredients = Column(String(1000))
     r_direction = Column(Text)
     r_nutrition_info = Column(String(500))
+    ratings = relationship(lambda: Rating, uselist=True,
+                           cascade="all, delete-orphan")
 
     def __init__(
         self,
@@ -117,8 +137,16 @@ class Recipe(Base):
         self.r_direction = r_direction
         self.r_nutrition_info = r_nutrition_info
 
-    def asSchemaDict(self):
-        return RecipeSchema().dump(self)
+    def asSchemaDict(self, include_ratings=True):
+        recipe = RecipeSchema().dump(self)
+        if include_ratings:
+            recipe["ratings"] = [r.asSchemaDict() for r in self.ratings]
+        return recipe
+
+    def addRating(self, user_id, rating, comment=None):
+        rating = Rating(self.id, user_id, rating, comment)
+        self.ratings.append(rating)
+        return rating
 
 
 def replaceVulgarFractions(s: str):
@@ -164,7 +192,8 @@ class ShoppingList(Base):
     __tablename__ = "shopping_lists"
     id = Column(Integer, primary_key=True)
     user = relationship("User", uselist=False, cascade="all, delete-orphan")
-    ingredients = relationship(lambda: ListIngredient, uselist=True)
+    ingredients = relationship(
+        lambda: ListIngredient, uselist=True, cascade="all, delete-orphan")
 
     def __init__(self, user: User):
         self.user = user

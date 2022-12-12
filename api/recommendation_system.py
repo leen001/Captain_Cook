@@ -26,7 +26,8 @@ def get_recommendations(n, scores, recipes_as_dict):
     # return top recipes as dicts
     recipes = top.to_dict("records")
     # validate schema
-    recipes = RecipeRecommendationSchema(many=True).load(recipes)
+    recipes = [RecipeRecommendationSchema().load(recipe)
+               for recipe in recipes]
     # for recipe in recipes:
     #     assert (
     #         len(RecipeRecommendationSchema().validate(recipe)) == 0

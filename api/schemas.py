@@ -14,6 +14,14 @@ class BasicSuccess(ma.Schema):
     success = ma.fields.Str()
 
 
+class RatingSchema(ma.Schema):
+    id = ma.fields.Integer()
+    recipe_id = ma.fields.Integer()
+    user_id = ma.fields.Integer()
+    rating = ma.fields.Integer(validate=lambda x: 0 <= x <= 5)
+    comment = ma.fields.String(allow_none=True)
+
+
 class RecipeSchema(ma.Schema):
     id = ma.fields.Int()
     recipe = ma.fields.String()
@@ -25,6 +33,7 @@ class RecipeSchema(ma.Schema):
     ingredients = ma.fields.String()
     r_direction = ma.fields.String()
     r_nutrition_info = ma.fields.String()
+    ratings = ma.fields.Nested(RatingSchema, many=True, allow_none=True)
 
 
 class RecipeRecommendationSchema(RecipeSchema):

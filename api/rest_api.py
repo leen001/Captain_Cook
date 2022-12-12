@@ -44,14 +44,25 @@ except sqlalchemy.exc.OperationalError as e:
     sys.exit(1)
 
 
-@app.get("/auth/status")
+@app.get("/auth/user")
 @marshal_with(UserSchema, code=200, description="Authenticated user")
 @authenticated
 def auth_status():
     return (g.user.asSchemaDict(), 200)
 
 
+@app.delete("/auth/user")
+@marshal_with(BasicSuccess, code=200, description="User deleted")
+@authenticated
+def delete_user():
+    db.delete(g.user)
+    # TODO: delete shopping list
+    db.commit()
+    return ({"success": True}, 200)
+
+
 docs.register(auth_status)
+docs.register(delete_user)
 
 
 @app.get("/")
@@ -64,7 +75,8 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(
+        fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -80,8 +92,17 @@ def recommend_recipe(ingredients=list(), count=5):
     if count < 1:
         return ({"error": "Please provide a positive number for n."}, 400)
     db_recipes = db.query(Recipe).all()
+    if count > len(db_recipes):
+        return (
+            {
+                "error": f"Please provide a number for n that is smaller than (or equal to) the number of recipes in the database ({len(db_recipes)})."
+            },
+            400,
+        )
     recipes_as_dicts = [recipe.asSchemaDict() for recipe in db_recipes]
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
+    # recipes = [db.query(Recipe).filter_by(
+    #     id=recipe["id"]).first().asSchemaDict() for recipe in recipes]
     return (
         {"recipes": recipes, "count": len(recipes)},
         200,
@@ -107,7 +128,8 @@ def get_or_create_shopping_list(user):
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(
+        id=user.shopping_list).first()
     return shopping_list
 
 
@@ -181,6 +203,25 @@ docs.register(add_to_list)
 docs.register(add_recipe_to_list)
 docs.register(remove_from_list)
 docs.register(clear_list)
+
+
+@app.post("/recipes/<recipe_id>/rating")
+@use_kwargs({"rating": fields.Int(), "comment": fields.Str(allow_none=True)})
+@marshal_with(RecipeSchema, code=200)
+@marshal_with(BasicError, code=404, description="Recipe not found")
+@authenticated
+def rate_recipe(recipe_id: int, rating: int, comment: str = None):
+    recipe = db.query(Recipe).filter_by(id=recipe_id).first()
+    if not recipe:
+        return ({"error": "Recipe not found"}, 404)
+    rating = recipe.addRating(g.user, rating, comment)
+    db.add(rating)
+    db.commit()
+    return (recipe.asSchemaDict(), 200)
+
+
+docs.register(rate_recipe)
+
 
 if __name__ == "__main__":
     insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
