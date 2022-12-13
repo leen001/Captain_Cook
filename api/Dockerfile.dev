@@ -5,7 +5,6 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-compile -r requirements.txt
-# download nltk
 RUN python -m nltk.downloader averaged_perceptron_tagger
 COPY . /app
 ENTRYPOINT [ "python" ]

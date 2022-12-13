@@ -5,6 +5,7 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install --no-compile -r requirements.txt
+RUN python -m nltk.downloader averaged_perceptron_tagger
 RUN pip install --upgrade gunicorn
 EXPOSE 3000
 COPY . /app
