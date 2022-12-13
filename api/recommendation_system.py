@@ -74,11 +74,3 @@ def rec_system(ingredients: list, recipes_as_dict: list, n=5):
     # Getting the top n recommendations
     recommendations = get_recommendations(n, scores, recipes_as_dict)
     return recommendations
-
-
-if __name__ == "__main__":
-    # Testing the system with these test ingreds
-    test_ingredients = "chicken thigh, apple, onion, rice noodle"
-    test_ingredients2 = "strawberry, hdh, icecream, donuts, chsmpion, flowers, a, salad, tomato, onion, salad, icecream, jam, cheese, chocolate"
-    recs = rec_system(test_ingredients)
-    print(recs.score)
