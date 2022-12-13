@@ -30,7 +30,8 @@ Base = declarative_base()
 def init_db(engine: Engine, force: bool = False):
     if force:
         Base.metadata.drop_all(engine)
-    print(f"Creating database tables for models: {Base.metadata.tables.keys()}")
+    print(
+        f"Creating database tables for models: {Base.metadata.tables.keys()}")
     Base.metadata.create_all(engine, checkfirst=bool(not force))
     print("Database tables created")
 
@@ -118,7 +119,8 @@ class Recipe(Base):
     ingredients = Column(String(1000))
     r_direction = Column(Text)
     r_nutrition_info = Column(String(500))
-    ratings = relationship(lambda: Rating, uselist=True, cascade="all, delete-orphan")
+    ratings = relationship(lambda: Rating, uselist=True,
+                           cascade="all, delete-orphan")
 
     def __init__(
         self,
@@ -138,16 +140,22 @@ class Recipe(Base):
         self.prep_time = prep_time
         self.cooking_time = cooking_time
         self.total_time = total_time
-        self.recipe_servings = recipe_servings if len(recipe_servings) > 0 else 0
+        self.recipe_servings = recipe_servings if len(
+            recipe_servings) > 0 else 0
         self.recipe_yield = recipe_yield
         self.ingredients = ingredients
         self.r_direction = r_direction
         self.r_nutrition_info = r_nutrition_info
 
+    def _calculate_rating_score(self):
+        return round(sum([r.rating for r in self.ratings]) / len(self.ratings), 1) if len(self.ratings) > 0 else None
+
     def asSchemaDict(self, include_ratings=True):
         recipe = RecipeSchema().dump(self)
         if include_ratings:
             recipe["ratings"] = [r.asSchemaDict() for r in self.ratings]
+            score = self._calculate_rating_score()
+            recipe["rating_score"] = score
         return recipe
 
     def addRating(self, user_id, rating, comment=None):
@@ -216,7 +224,8 @@ class ShoppingList(Base):
 
     def asSchemaDict(self):
         shopping_list = ShoppingListSchema().dump(self)
-        shopping_list["ingredients"] = [i.asSchemaDict() for i in self.ingredients]
+        shopping_list["ingredients"] = [i.asSchemaDict()
+                                        for i in self.ingredients]
         return shopping_list
 
     def addIngredient(self, ingredient: ListIngredient):

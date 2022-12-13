@@ -34,6 +34,7 @@ class RecipeSchema(ma.Schema):
     r_direction = ma.fields.String()
     r_nutrition_info = ma.fields.String()
     ratings = ma.fields.Nested(RatingSchema, many=True, allow_none=True)
+    rating_score = ma.fields.Number(allow_none=True)
 
 
 class RecipeRecommendationSchema(RecipeSchema):

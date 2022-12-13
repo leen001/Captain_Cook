@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 from flask import Flask, g, redirect, request, url_for
@@ -85,7 +86,8 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(
+        fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -128,8 +130,45 @@ def recipe_by_id(recipe_id):
     return (recipe.asSchemaDict(), 200)
 
 
+@app.get("/recipes/by_rating/<int:count>")
+@marshal_with(RecipeSchema(many=True), code=200)
+@marshal_with(BasicError, code=400, description="Bad request")
+def recipe_by_rating(count=5):
+    if count < 1:
+        return ({"error": "Please provide a positive number for n."}, 400)
+    recipes = db.query(Recipe).all()
+    with_ratings = [recipe.asSchemaDict()
+                    for recipe in recipes if len(recipe.ratings) > 0]
+    if len(with_ratings) < 1:
+        return (
+            {
+                "error": "There are no recipes with ratings in the database."
+            },
+            400,
+        )
+    elif len(with_ratings) < count:
+        return (
+            {
+                "error": f"Please provide a number for n that is smaller than (or equal to) the number of recipes with ratings in the database ({len(with_ratings)})."
+            },
+            400,
+        )
+    else:
+        with_ratings.sort(key=lambda x: x["rating_score"], reverse=True)
+        return (with_ratings[:count], 200)
+
+
+@app.get("/recipes/random")
+@marshal_with(RecipeSchema, code=200)
+def random_recipe():
+    recipe = db.query(Recipe).order_by(sqlalchemy.func.random()).first()
+    return (recipe.asSchemaDict(), 200)
+
+
 docs.register(recommend_recipe)
 docs.register(recipe_by_id)
+docs.register(recipe_by_rating)
+docs.register(random_recipe)
 
 
 def get_or_create_shopping_list(user):
@@ -137,7 +176,8 @@ def get_or_create_shopping_list(user):
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(
+        id=user.shopping_list).first()
     return shopping_list
 
 
