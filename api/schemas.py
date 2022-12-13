@@ -55,6 +55,10 @@ class IngredientInputSchema(ma.Schema):
     icon = ma.fields.String(allow_none=True)
 
 
+class AvailableIngredientSchema(ma.Schema):
+    name = ma.fields.String()
+
+
 class IngredientSchema(IngredientInputSchema):
     id = ma.fields.Integer()
 

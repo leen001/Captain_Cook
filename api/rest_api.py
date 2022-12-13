@@ -7,7 +7,7 @@ from webargs import fields
 from marshmallow import Schema
 from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
 from middlewares import authenticated
-from db import User, Recipe, ShoppingList, ListIngredient, init_db, insert_from_csv
+from db import User, Recipe, ShoppingList, ListIngredient, AvailableIngredient, init_db, insert_from_csv, init_ingredients
 
 from schemas import (
     BasicError,
@@ -19,6 +19,7 @@ from schemas import (
     ShoppingListSchema,
     IngredientSchema,
     IngredientInputSchema,
+    AvailableIngredientSchema,
 )
 import recommendation_system as rs
 
@@ -39,6 +40,7 @@ try:
     db.configure(bind=engine)
     db = db()
     app.db = db
+    init_ingredients(db)
 except sqlalchemy.exc.OperationalError as e:
     print(f"Error connecting to MariaDB: {e}")
     sys.exit(1)
@@ -221,6 +223,16 @@ def rate_recipe(recipe_id: int, rating: int, comment: str = None):
 
 
 docs.register(rate_recipe)
+
+
+@app.get("/ingredients")
+@marshal_with(AvailableIngredientSchema(many=True), code=200)
+def get_ingredients():
+    ingredients = db.query(AvailableIngredient).all()
+    return ([ingredients.asSchemaDict() for ingredients in ingredients], 200)
+
+
+docs.register(get_ingredients)
 
 
 if __name__ == "__main__":

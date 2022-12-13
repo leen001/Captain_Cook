@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
-from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, RatingSchema, validateSchema
+from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, RatingSchema, validateSchema, AvailableIngredientSchema
 
 from schemas import UserSchema
 
@@ -162,7 +162,7 @@ class ListIngredient(Base):
     __tablename__ = "list_ingredients"
     id = Column(Integer, primary_key=True)
     shopping_list_id = Column(Integer, ForeignKey("shopping_lists.id"))
-    name = Column(String(100))
+    name = Column(String(200))
     quantity = Column(String(50))
     unit = Column(String(50))
     condition = Column(String(50))
@@ -177,6 +177,9 @@ class ListIngredient(Base):
 
     def fromRecipeIngredient(self, recipeIngredient: str):
         safe_for_parse = replaceVulgarFractions(recipeIngredient)
+        safe_for_parse = safe_for_parse.replace("®", "")
+        if not safe_for_parse[0].isnumeric():
+            safe_for_parse = "0 " + safe_for_parse
         parsed = parse_ingredient(safe_for_parse)
         self.name = parsed.name or "surprise"
         self.quantity = parsed.quantity or 0
@@ -222,3 +225,27 @@ class ShoppingList(Base):
         for i in ingredients:
             self.removeIngredient(i)
         return ingredients
+
+
+class AvailableIngredient(Base):
+    __tablename__ = "available_ingredients"
+    name = Column(String(200), primary_key=True)
+
+    def __init__(self, name):
+        self.name = name
+
+    def asSchemaDict(self):
+        return AvailableIngredientSchema().dump(self)
+
+def init_ingredients(session: Session):
+    recipes = session.query(Recipe).all()
+    for recipe in recipes:
+        for ingredient in recipe.ingredients[2:-2].split("', '"):
+            ing_name = ListIngredient().fromRecipeIngredient(ingredient).name
+            if ing_name.startswith("% "):
+                ing_name = ing_name[2:]
+            print(ing_name)
+            db_ing = AvailableIngredient(ing_name)
+            if not session.query(AvailableIngredient).filter_by(name=db_ing.name).first():
+                session.add(db_ing)
+                session.commit()

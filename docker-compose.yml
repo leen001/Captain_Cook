@@ -30,7 +30,7 @@ services:
       - db
     restart: unless-stopped
     environment:
-      DEBUG: True
+      DEBUG: "True"
       # PORT: 3000
       # DB_FORCE_RECREATE: True
       DB_HOST: db
