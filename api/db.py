@@ -8,11 +8,21 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
-from schemas import UserSchema, RecipeSchema, IngredientSchema, ShoppingListSchema, RatingSchema, validateSchema, AvailableIngredientSchema
+from sqlalchemy.exc import IntegrityError
+from schemas import (
+    UserSchema,
+    RecipeSchema,
+    IngredientSchema,
+    ShoppingListSchema,
+    RatingSchema,
+    validateSchema,
+    AvailableIngredientSchema,
+)
 
 from schemas import UserSchema
 
-from parse_ingredients import parse_ingredient
+from ingredient_parser import parse_ingredient
+
 
 Base = declarative_base()
 
@@ -20,8 +30,7 @@ Base = declarative_base()
 def init_db(engine: Engine, force: bool = False):
     if force:
         Base.metadata.drop_all(engine)
-    print(
-        f"Creating database tables for models: {Base.metadata.tables.keys()}")
+    print(f"Creating database tables for models: {Base.metadata.tables.keys()}")
     Base.metadata.create_all(engine, checkfirst=bool(not force))
     print("Database tables created")
 
@@ -109,8 +118,7 @@ class Recipe(Base):
     ingredients = Column(String(1000))
     r_direction = Column(Text)
     r_nutrition_info = Column(String(500))
-    ratings = relationship(lambda: Rating, uselist=True,
-                           cascade="all, delete-orphan")
+    ratings = relationship(lambda: Rating, uselist=True, cascade="all, delete-orphan")
 
     def __init__(
         self,
@@ -123,15 +131,14 @@ class Recipe(Base):
         recipe_yield,
         ingredients,
         r_direction,
-        r_nutrition_info
+        r_nutrition_info,
     ):
         self.url = url
         self.recipe = recipe
         self.prep_time = prep_time
         self.cooking_time = cooking_time
         self.total_time = total_time
-        self.recipe_servings = recipe_servings if len(
-            recipe_servings) > 0 else 0
+        self.recipe_servings = recipe_servings if len(recipe_servings) > 0 else 0
         self.recipe_yield = recipe_yield
         self.ingredients = ingredients
         self.r_direction = r_direction
@@ -150,8 +157,13 @@ class Recipe(Base):
 
 
 def replaceVulgarFractions(s: str):
-    def f(s): return F(s.translate(
-        {8260: 47, 8543: "1/"}))if s[1:]else F(numeric(s)).limit_denominator()
+    def f(s):
+        return (
+            F(s.translate({8260: 47, 8543: "1/"}))
+            if s[1:]
+            else F(numeric(s)).limit_denominator()
+        )
+
     to_replace = re.findall(r"[\u2150-\u215E\u00BC-\u00BE]", s)
     for r in to_replace:
         s = s.replace(r, str(f(r)))
@@ -168,7 +180,9 @@ class ListIngredient(Base):
     condition = Column(String(50))
     icon = Column(String(100))
 
-    def __init__(self, name="surprise", quantity=0, unit=None, condition=None, icon=None):
+    def __init__(
+        self, name="surprise", quantity=0, unit=None, condition=None, icon=None
+    ):
         self.name = name
         self.quantity = quantity
         self.unit = unit
@@ -176,15 +190,13 @@ class ListIngredient(Base):
         self.icon = icon
 
     def fromRecipeIngredient(self, recipeIngredient: str):
-        safe_for_parse = replaceVulgarFractions(recipeIngredient)
-        safe_for_parse = safe_for_parse.replace("®", "")
-        if not safe_for_parse[0].isnumeric():
-            safe_for_parse = "0 " + safe_for_parse
+        # safe_for_parse = replaceVulgarFractions(recipeIngredient)
+        safe_for_parse = recipeIngredient
         parsed = parse_ingredient(safe_for_parse)
-        self.name = parsed.name or "surprise"
-        self.quantity = parsed.quantity or 0
-        self.unit = parsed.unit or None
-        self.condition = parsed.comment or None
+        self.name = parsed.get("name", "surprise")
+        self.quantity = parsed.get("quantity", 0)
+        self.unit = parsed.get("unit", None)
+        self.condition = parsed.get("comment", None)
         return self
 
     def asSchemaDict(self):
@@ -196,15 +208,15 @@ class ShoppingList(Base):
     id = Column(Integer, primary_key=True)
     user = relationship("User", uselist=False, cascade="all, delete-orphan")
     ingredients = relationship(
-        lambda: ListIngredient, uselist=True, cascade="all, delete-orphan")
+        lambda: ListIngredient, uselist=True, cascade="all, delete-orphan"
+    )
 
     def __init__(self, user: User):
         self.user = user
 
     def asSchemaDict(self):
         shopping_list = ShoppingListSchema().dump(self)
-        shopping_list["ingredients"] = [i.asSchemaDict()
-                                        for i in self.ingredients]
+        shopping_list["ingredients"] = [i.asSchemaDict() for i in self.ingredients]
         return shopping_list
 
     def addIngredient(self, ingredient: ListIngredient):
@@ -237,15 +249,35 @@ class AvailableIngredient(Base):
     def asSchemaDict(self):
         return AvailableIngredientSchema().dump(self)
 
-def init_ingredients(session: Session):
+
+def init_ingredients(session: Session, clean=False):
     recipes = session.query(Recipe).all()
+    ingredient_names = set()
+    if clean:
+        for ing in session.query(AvailableIngredient).all():
+            session.delete(ing)
+        session.commit()
+        print(
+            f"Deleted all ingredients (remaining: {len(session.query(AvailableIngredient).all())})"
+        )
+    else:
+        ingredient_names = [i.name for i in session.query(AvailableIngredient).all()]
     for recipe in recipes:
         for ingredient in recipe.ingredients[2:-2].split("', '"):
-            ing_name = ListIngredient().fromRecipeIngredient(ingredient).name
-            if ing_name.startswith("% "):
-                ing_name = ing_name[2:]
-            print(ing_name)
-            db_ing = AvailableIngredient(ing_name)
-            if not session.query(AvailableIngredient).filter_by(name=db_ing.name).first():
-                session.add(db_ing)
+            ing_name = ListIngredient().fromRecipeIngredient(ingredient).name.lower()
+            ingredient_names.add(ing_name)
+    ingredients = [AvailableIngredient(i) for i in ingredient_names]
+    if len(ingredients) > 0:
+        print(f"Adding {len(ingredients)} ingredients to database")
+        for i in ingredients:
+            session.add(i)
+            try:
                 session.commit()
+            except IntegrityError as e:
+                print(f"Error adding ingredient: {i.name}")
+                session.rollback()
+        print(
+            f"Number of ingredients in database: {len(session.query(AvailableIngredient).all())}"
+        )
+    else:
+        print("No new ingredients to add")

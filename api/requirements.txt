@@ -26,4 +26,5 @@ requests==2.28.1
 mariadb==1.0.11
 SQLAlchemy==1.4.44
 flask-cors==3.0.10
-parse-ingredients==0.0.4
+# parse-ingredients==0.0.4
+ingredient-parser-nlp==0.1.0a3

@@ -7,7 +7,16 @@ from webargs import fields
 from marshmallow import Schema
 from flask_apispec import use_kwargs, marshal_with, FlaskApiSpec
 from middlewares import authenticated
-from db import User, Recipe, ShoppingList, ListIngredient, AvailableIngredient, init_db, insert_from_csv, init_ingredients
+from db import (
+    User,
+    Recipe,
+    ShoppingList,
+    ListIngredient,
+    AvailableIngredient,
+    init_db,
+    insert_from_csv,
+    init_ingredients,
+)
 
 from schemas import (
     BasicError,
@@ -40,7 +49,6 @@ try:
     db.configure(bind=engine)
     db = db()
     app.db = db
-    init_ingredients(db)
 except sqlalchemy.exc.OperationalError as e:
     print(f"Error connecting to MariaDB: {e}")
     sys.exit(1)
@@ -77,8 +85,7 @@ def hello():
 
 @app.post("/recipes")
 @use_kwargs(
-    {"ingredients": fields.List(
-        fields.Str(), required=True), "count": fields.Int()}
+    {"ingredients": fields.List(fields.Str(), required=True), "count": fields.Int()}
 )
 @marshal_with(
     Schema.from_dict(
@@ -130,8 +137,7 @@ def get_or_create_shopping_list(user):
         new_list = ShoppingList(user)
         db.add(new_list)
         db.commit()
-    shopping_list = db.query(ShoppingList).filter_by(
-        id=user.shopping_list).first()
+    shopping_list = db.query(ShoppingList).filter_by(id=user.shopping_list).first()
     return shopping_list
 
 
@@ -237,6 +243,7 @@ docs.register(get_ingredients)
 
 if __name__ == "__main__":
     insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
+    init_ingredients(db, clean=True)
 
     port = int(os.environ.get("PORT", 3000))
     if os.environ.get("DEBUG", False):
