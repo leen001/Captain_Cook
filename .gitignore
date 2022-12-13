@@ -5,3 +5,4 @@ api/src/__pycache__/recommendation_system.cpython-310.pyc
 secrets/
 *.pyc
 *.env
+.idea/
