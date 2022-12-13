@@ -253,6 +253,7 @@ class AvailableIngredient(Base):
 def init_ingredients(session: Session, clean=False):
     recipes = session.query(Recipe).all()
     ingredient_names = set()
+    in_db = list()
     if clean:
         for ing in session.query(AvailableIngredient).all():
             session.delete(ing)
@@ -261,11 +262,12 @@ def init_ingredients(session: Session, clean=False):
             f"Deleted all ingredients (remaining: {len(session.query(AvailableIngredient).all())})"
         )
     else:
-        ingredient_names = [i.name for i in session.query(AvailableIngredient).all()]
+        in_db = [i.name for i in session.query(AvailableIngredient).all()]
     for recipe in recipes:
         for ingredient in recipe.ingredients[2:-2].split("', '"):
             ing_name = ListIngredient().fromRecipeIngredient(ingredient).name.lower()
-            ingredient_names.add(ing_name)
+            if len(ing_name) > 2 and ing_name not in in_db:
+                ingredient_names.add(ing_name)
     ingredients = [AvailableIngredient(i) for i in ingredient_names]
     if len(ingredients) > 0:
         print(f"Adding {len(ingredients)} ingredients to database")

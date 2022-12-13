@@ -243,7 +243,7 @@ docs.register(get_ingredients)
 
 if __name__ == "__main__":
     insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
-    init_ingredients(db, clean=True)
+    init_ingredients(db)
 
     port = int(os.environ.get("PORT", 3000))
     if os.environ.get("DEBUG", False):
