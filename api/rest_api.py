@@ -1,7 +1,6 @@
-import math
 import os
 import sys
-from flask import Flask, g, redirect, request, url_for
+from flask import Flask, g, redirect
 from flask_cors import CORS
 import sqlalchemy
 from webargs import fields
@@ -67,7 +66,7 @@ def auth_status():
 @authenticated
 def delete_user():
     db.delete(g.user)
-    # TODO: delete shopping list
+    # TODO: delete shopping list (if required)
     db.commit()
     return ({"success": True}, 200)
 
@@ -79,9 +78,6 @@ docs.register(delete_user)
 @app.get("/")
 def hello():
     return redirect("/swagger-ui")
-
-
-# docs.register(hello)
 
 
 @app.post("/recipes")
@@ -112,8 +108,6 @@ def recommend_recipe(ingredients=list(), count=5):
         )
     recipes_as_dicts = [recipe.asSchemaDict() for recipe in db_recipes]
     recipes = rs.rec_system(ingredients, recipes_as_dicts, n=count)
-    # recipes = [db.query(Recipe).filter_by(
-    #     id=recipe["id"]).first().asSchemaDict() for recipe in recipes]
     return (
         {"recipes": recipes, "count": len(recipes)},
         200,
@@ -292,7 +286,7 @@ if __name__ == "__main__":
         app.run(
             host="0.0.0.0",
             port=port,
-            # ssl_context="adhoc",
         )
     print("Closing db connection...")
     db.close()
+    exit(0)
