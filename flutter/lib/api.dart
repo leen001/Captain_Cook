@@ -27,7 +27,7 @@ class Recipe {
   final List ingredients;
   final String prep_time;
   final List r_direction;
-  final String r_nutrition_info;
+  final List r_nutrition_info;
   final String recipe;
   final double recipe_servings;
   final String recipe_yield;
@@ -62,12 +62,19 @@ class Recipe {
     r_directionList[r_directionList.length - 1] =
         r_directionList[r_directionList.length - 1].substring(
             0, r_directionList[r_directionList.length - 1].length - 2);
+    String r_nutrition_info = json['r_nutrition_info'];
+    List<String> r_nutrition_infoList = r_nutrition_info.split(';');
+    r_nutrition_infoList[0] = r_nutrition_infoList[0].substring(2);
+    r_nutrition_infoList[r_nutrition_infoList.length - 1] =
+        r_nutrition_infoList[r_nutrition_infoList.length - 1].substring(0,
+            r_nutrition_infoList[r_nutrition_infoList.length - 1].length - 2);
+
     return Recipe(
       json['cooking_time'],
       ingredientsList,
       json['prep_time'],
       r_directionList,
-      json['r_nutrition_info'],
+      r_nutrition_infoList,
       json['recipe'],
       json['recipe_servings'],
       json['recipe_yield'],

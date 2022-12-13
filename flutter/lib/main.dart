@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html';
 //import 'dart:ffi';
 
 import 'package:captain_cook/api.dart';
@@ -48,10 +49,9 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   bool _loadingCatFact = true;
-
-  //List<Map<String, dynamic>> list = [];
   List<dynamic> list_ingredients = [];
   List<dynamic> list_recipes = [];
+  Color _favIconColor = Colors.grey;
 
   void _openSettings() {
     showDialog(
@@ -102,10 +102,11 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-    void _openshoppinglist() {
+  void _openshoppinglist() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Shoppinglist( name: 'test', checked: false)),
+      MaterialPageRoute(
+          builder: (context) => Shoppinglist(name: 'test', checked: false)),
     );
   }
 
@@ -136,443 +137,402 @@ class _MainAppState extends State<MainApp> {
     }
   }
 
-  // Widget _buildCatFactWidget(CatFact catFact) {
-  //   return Card(
-  //     elevation: 10,
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(15.0),
-  //       child: Column(children: [
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             const Icon(
-  //               MdiIcons.cat,
-  //               size: 30,
-  //               color: Colors.orangeAccent,
-  //             ),
-  //             const SizedBox(
-  //               width: 10,
-  //             ),
-  //             Text(
-  //               "Did you know?",
-  //               style: TextStyle(
-  //                   fontSize: 20,
-  //                   color: Theme.of(context).primaryColor,
-  //                   fontWeight: FontWeight.bold),
-  //             ),
-  //           ],
-  //         ),
-  //         const SizedBox(
-  //           height: 10,
-  //         ),
-  //         Text(
-  //           catFact.fact,
-  //           textAlign: TextAlign.center,
-  //           style: const TextStyle(fontSize: 16),
-  //         ),
-  //         const SizedBox(
-  //           height: 20,
-  //         ),
-  //         IconButton(
-  //             onPressed: (_loadingCatFact)
-  //                 ? null
-  //                 : () => setState(() {
-  //                       _loadingCatFact = true;
-  //                     }),
-  //             tooltip: "Get another fact",
-  //             icon: const Icon(MdiIcons.chevronDownCircleOutline))
-  //       ]),
-  //     ),
-  //   );
-  // }
-
   List<Widget> _buildRecipeWidgets(List<Recipe> recipes) {
     List<Widget> recipeWidgets = [];
+
     for (final recipe in recipes) {
       //print("recipe ${recipe.uid}");
       recipeWidgets.add(
         Card(
-            child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text(
-                recipe.recipe,
-                style: const TextStyle(
-                    fontSize: 30, height: 3, fontWeight: FontWeight.bold),
-              ),
-              const Icon(
-                Icons.done_rounded,
-                color: Colors.green,
-                size: 30,
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: 2,
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (var i = 0; i < recipe.ingredients.length; i++)
-                          ListTile(
-                            title: Text(recipe.ingredients[i]),
-                          ),
-                      ],
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 40, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      recipe.recipe,
+                      style: const TextStyle(
+                          fontSize: 30, height: 3, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child:
-                        //Text(recipe.r_direction),
-                        ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (var i = 0; i < recipe.r_direction.length; i++)
-                          ListTile(
-                            title: Text(recipe.r_direction[i]),
-                          ),
-                      ],
+                    const Icon(
+                      Icons.done_rounded,
+                      color: Colors.green,
+                      size: 30,
                     ),
-                  ),
-                ],
-              )
-            ],
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(0, 0, 10, 40),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Flexible(
+                            flex: 2,
+                            fit: FlexFit.loose,
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                for (var i = 0;
+                                    i < recipe.ingredients.length;
+                                    i++)
+                                  ListTile(
+                                    title: Text(recipe.ingredients[i]),
+                                    trailing: IconButton(
+                                      splashRadius: 20,
+                                      splashColor: Colors.green,
+                                      focusColor: Colors.green,
+                                      color: _favIconColor,
+                                      icon:
+                                          const Icon(Icons.add_circle_outline),
+                                      onPressed: () {},
+                                      highlightColor: Colors.green,
+
+                                      // setState(() {
+                                      //   if (_favIconColor == Colors.grey) {
+                                      //     //_openSettings;
+                                      //     _favIconColor = Colors.red;
+                                      //   } else {
+                                      //     _favIconColor = Colors.grey;
+                                      //   }
+                                      //   //HERE get the add ingredient Selector plus pop up
+                                      // });
+                                      // }
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const VerticalDivider(
+                            color: Colors.black,
+                            thickness: 1,
+                            indent: 20,
+                            endIndent: 20,
+                          ),
+                          Flexible(
+                            flex: 5,
+                            fit: FlexFit.loose,
+                            child:
+                                //Text(recipe.r_direction),
+                                ListView(
+                              shrinkWrap: true,
+                              children: [
+                                for (var i = 0;
+                                    i < recipe.r_direction.length;
+                                    i++)
+                                  ListTile(
+                                    title: Text(recipe.r_direction[i]),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Flexible(
+                            flex: 2,
+                            fit: FlexFit.loose,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                for (var i = 0;
+                                    i < recipe.r_nutrition_info.length;
+                                    i++)
+                                  Text(recipe.r_nutrition_info[i]),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            flex: 2,
+                            fit: FlexFit.loose,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Text(
+                                  "Cooking Time ${recipe.cooking_time}",
+                                ),
+                                Text("Total Time ${recipe.total_time}"),
+                                Text(
+                                    "Recipe Servings ${recipe.recipe_servings}"),
+                                //Text("Recipe yield ${recipe.recipe_yield}")
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        )),
+        ),
       );
     }
     print("widget length ${recipeWidgets.length}");
     return recipeWidgets;
-    // children = <Widget>[
-    //   // for (var i = 0; i < list.length; i++)
-    //   //   ListTile(
-    //   //     title: Text(list[i]),
-    //   //   ),
-    //   const Icon(
-    //     Icons.done_rounded,
-    //     color: Colors.green,
-    //     size: 30,
-    //   ),
-
-    //   ListView(
-    //     shrinkWrap: true,
-    //     children: [
-    //       for (var i = 0; i < list.length; i++)
-    //         ListTile(
-    //           title: Text(list[i]),
-    //         ),
-    //     ],
-    //   ),
-    //   //Text(snapshot.data!.ingredients.split(',').toString())
-    //   //list =(snapshot.data!.ingredients.split(',')),
-    //   //list.forEach((String age) => print(age));
-    // ];
-    // return Card(
-    //     child: Column(
-    //       mainAxisAlignment: MainAxisAlignment.center,
-    //       children: children,
-    //     ),
-    // );
-    //return Text(snapshot.data!.ingredients);
   }
+
+  // @override
+  // Widget build(BuildContext) {
+  //   return IconButton(
+  //       icon: Icon(Icons.star, color: _favIconColor),
+  //       onPressed: () {
+  //         setState(() {
+  //         _favIconColor = Colors.green;
+  //       });
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: const [
-            Text("Captain"),
-            Icon(MdiIcons.chefHat),
-            Text("Cook"),
+        //resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: const [
+              Text("Captain"),
+              Icon(MdiIcons.chefHat),
+              Text("Cook"),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: "Settings",
+              onPressed: _openSettings,
+            ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: "Settings",
-            onPressed: _openSettings,
-          ),
-        ],
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              primary: true,
-              child: Column(
-                children: [
-                  Card(
-                    elevation: 10,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Consumer<AvailableIngredients>(
-                        builder: (context, availableIngredients, child) =>
-                            Center(
-                          // child: Text((availableIngredients.length > 0)
-                          //     ? availableIngredients.all
-                          //         .map((e) => e.id)
-                          //         .toList()
-                          //         .toString()
-                          //     : "Please select your ingredients")
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 16),
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                border: UnderlineInputBorder(),
-                                labelText: 'Search Recipe',
-                              ),
-                            ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                primary: true,
+                child: Column(
+                  children: [
+                    Card(
+                      elevation: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Consumer<AvailableIngredients>(
+                          builder: (context, availableIngredients, child) =>
+                              const Center(
+                            // child: Text((availableIngredients.length > 0)
+                            //     ? availableIngredients.all
+                            //         .map((e) => e.id)
+                            //         .toList()
+                            //         .toString()
+                            //     : "Please select your ingredients")
+                            child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 16),
+                                child: AutocompleteBasicExample()
+
+                                ///HERE
+                                //     TextFormField(
+                                //   decoration: const InputDecoration(
+                                //     border: UnderlineInputBorder(),
+                                //     labelText: 'Search Recipe',
+                                //   ),
+                                // ),
+                                ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  FutureBuilder<List<Recipe>>(
-                    future: _getRecipes(),
-                    builder: (context, snapshot) {
-                      // if (snapshot.hasData) {
-                      //   final children = <Widget>[];
-                      //   for (var i = 0; i < list.length; i++) {
-                      //     children.add(ListTile(
-                      //       title: Text(list[i]),
-                      //     ));
-                      //   }
-                      //   return ListView(
-                      //     shrinkWrap: true,
-                      //     children: children,
-                      //   );
-                      // } else if (snapshot.hasError) {
-                      //   return Text("${snapshot.error}");
-                      // }
-                      // return const LinearProgressIndicator();
-
-                      //List<Widget> children;
-                      if (snapshot.hasData) {
-                        return Column(
-                          // padding: const EdgeInsets.all(8),
-                          children: _buildRecipeWidgets(snapshot.data!),
-                        );
-                        //
-
-                        //return ListView.builder(itemBuilder: _buildRecipeWidget(snapshot.data![))
-
-                        // Recipe recipe = snapshot.data![0];
-                        // return Card(
-                        //     child: SingleChildScrollView(
-                        //   child: Column(
-                        //     children: [
-                        //       Text(
-                        //         recipe.recipe,
-                        //         style: const TextStyle(
-                        //             fontSize: 30,
-                        //             height: 3,
-                        //             fontWeight: FontWeight.bold),
-                        //       ),
-                        //       const Icon(
-                        //         Icons.done_rounded,
-                        //         color: Colors.green,
-                        //         size: 30,
-                        //       ),
-                        //       Row(
-                        //         children: <Widget>[
-                        //           Expanded(
-                        //             flex: 2,
-                        //             child: ListView(
-                        //               shrinkWrap: true,
-                        //               children: [
-                        //                 for (var i = 0;
-                        //                     i < recipe.ingredients.length;
-                        //                     i++)
-                        //                   ListTile(
-                        //                     title: Text(recipe.ingredients[i]),
-                        //                   ),
-                        //               ],
-                        //             ),
-                        //           ),
-                        //           Expanded(
-                        //             flex: 4,
-                        //             child:
-                        //                 //Text(recipe.r_direction),
-                        //                 ListView(
-                        //               shrinkWrap: true,
-                        //               children: [
-                        //                 for (var i = 0;
-                        //                     i < recipe.r_direction.length;
-                        //                     i++)
-                        //                   ListTile(
-                        //                     title: Text(recipe.r_direction[i]),
-                        //                   ),
-                        //               ],
-                        //             ),
-                        //           ),
-                        //         ],
-                        //       )
-                        //     ],
-                        //   ),
-                        // ));
-                        // // children = <Widget>[
-                        // //   // for (var i = 0; i < list.length; i++)
-                        // //   //   ListTile(
-                        // //   //     title: Text(list[i]),
-                        // //   //   ),
-                        // //   const Icon(
-                        // //     Icons.done_rounded,
-                        // //     color: Colors.green,
-                        // //     size: 30,
-                        // //   ),
-
-                        // //   //   ListView(
-                        //   //     shrinkWrap: true,
-                        //   //     children: [
-                        //   //       for (var i = 0; i < list.length; i++)
-                        //   //         ListTile(
-                        //   //           title: Text(list[i]),
-                        //   //         ),
-                        //   //     ],
-                        //   //   ),
-                        //   //   //Text(snapshot.data!.ingredients.split(',').toString())
-                        //   //   //list =(snapshot.data!.ingredients.split(',')),
-                        //   //   //list.forEach((String age) => print(age));
-                        //   // ];
-                        //   // return Card(
-                        //   //     child: Column(
-                        //   //       mainAxisAlignment: MainAxisAlignment.center,
-                        //   //       children: children,
-                        //   //     ),
-                        //   // );
-                        //   //return Text(snapshot.data!.ingredients);
+                    FutureBuilder<List<Recipe>>(
+                      future: _getRecipes(),
+                      builder: (context, snapshot) {
+                        // if (snapshot.hasData) {
+                        //   final children = <Widget>[];
+                        //   for (var i = 0; i < list.length; i++) {
+                        //     children.add(ListTile(
+                        //       title: Text(list[i]),
+                        //     ));
+                        //   }
+                        //   return ListView(
+                        //     shrinkWrap: true,
+                        //     children: children,
+                        //   );
+                        // } else if (snapshot.hasError) {
+                        //   return Text("${snapshot.error}");
                         // }
-                      } else if (snapshot.hasError) {
-                        return Text("${snapshot.error}");
-                      }
-                      return const LinearProgressIndicator();
-                    },
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Consumer<AuthenticatedUser>(
-                      builder: (context, googleAuth, child) => Card(
-                          elevation: 10,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: FutureBuilder(
-                              future: googleAuth.isSignedIn,
-                              builder: (context, snapshot) => (snapshot.hasData)
-                                  ? (snapshot.data as bool)
-                                      ? Column(children: [
-                                          FutureBuilder(
-                                            future: googleAuth.user,
-                                            builder: (context, user) =>
-                                                RichText(
-                                              text: TextSpan(
-                                                text: "Logged in as ",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                                children: [
-                                                  (user.hasData &&
-                                                          user.data != null)
-                                                      ? TextSpan(
-                                                          text: (user.data
-                                                                  as GoogleSignInAccount)
-                                                              .displayName,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold))
-                                                      : const TextSpan(
-                                                          text: "Unknown",
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                ],
+                        // return const LinearProgressIndicator();
+
+                        if (snapshot.hasData) {
+                          return Column(
+                            children: _buildRecipeWidgets(snapshot.data!),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text("${snapshot.error}");
+                        }
+                        return const LinearProgressIndicator();
+                      },
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Consumer<AuthenticatedUser>(
+                        builder: (context, googleAuth, child) => Card(
+                            elevation: 10,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: FutureBuilder(
+                                future: googleAuth.isSignedIn,
+                                builder: (context, snapshot) => (snapshot
+                                        .hasData)
+                                    ? (snapshot.data as bool)
+                                        ? Column(children: [
+                                            FutureBuilder(
+                                              future: googleAuth.user,
+                                              builder: (context, user) =>
+                                                  RichText(
+                                                text: TextSpan(
+                                                  text: "Logged in as ",
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .primaryColor),
+                                                  children: [
+                                                    (user.hasData &&
+                                                            user.data != null)
+                                                        ? TextSpan(
+                                                            text: (user.data
+                                                                    as GoogleSignInAccount)
+                                                                .displayName,
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold))
+                                                        : const TextSpan(
+                                                            text: "Unknown",
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                await googleAuth.signOut();
-                                              },
-                                              child: const Text("Sign out"))
-                                        ])
-                                      : Column(children: [
-                                          const Text(
-                                            "Login",
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.indigo,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                await googleAuth.signIn();
-                                              },
-                                              child: const Text("Sign in")),
-                                          (googleAuth.hasError)
-                                              ? Text(
-                                                  googleAuth.error,
-                                                  style: const TextStyle(
-                                                      color: Colors.red),
-                                                )
-                                              : const SizedBox()
-                                        ])
-                                  : const Center(
-                                      child: SizedBox(
-                                        height: 50,
-                                        width: 50,
-                                        child: CircularProgressIndicator(),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ElevatedButton(
+                                                onPressed: () async {
+                                                  await googleAuth.signOut();
+                                                },
+                                                child: const Text("Sign out"))
+                                          ])
+                                        : Column(children: [
+                                            const Text(
+                                              "Login",
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.indigo,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ElevatedButton(
+                                                onPressed: () async {
+                                                  await googleAuth.signIn();
+                                                },
+                                                child: const Text("Sign in")),
+                                            (googleAuth.hasError)
+                                                ? Text(
+                                                    googleAuth.error,
+                                                    style: const TextStyle(
+                                                        color: Colors.red),
+                                                  )
+                                                : const SizedBox()
+                                          ])
+                                    : const Center(
+                                        child: SizedBox(
+                                          height: 50,
+                                          width: 50,
+                                          child: CircularProgressIndicator(),
+                                        ),
                                       ),
-                                    ),
-                            ),
-                          )),
+                              ),
+                            )),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+        floatingActionButton:
+            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          FloatingActionButton(
+            onPressed: _openIngredientSelector,
+            tooltip: 'Select ingredients',
+            heroTag: "ingredient_selector_open",
+            isExtended: true,
+            child: const Icon(Icons.check_box),
+          ), // This trailing comma makes auto-formatting nicer for build methods.
+          SizedBox(
+            height: 10,
           ),
-          // Card(
-          //   child:
+          FloatingActionButton(
+            onPressed: _openshoppinglist,
+            tooltip: 'Shopping List',
+            heroTag: "shopping_list_open",
+            isExtended: true,
+            child: const Icon(Icons.playlist_add_check),
+          ),
+        ]));
+  }
+}
 
-          // ),
-        ],
-      ),
-      floatingActionButton: Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-      FloatingActionButton(
-        onPressed: _openIngredientSelector,
-        tooltip: 'Select ingredients',
-        heroTag: "ingredient_selector_open",
-        isExtended: true,
-        child: const Icon(Icons.check_box),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-      SizedBox(
-        height: 10,
-      ),
-      FloatingActionButton(
-        onPressed: _openshoppinglist,
-        tooltip: 'Shopping List',
-        heroTag: "shopping_list_open",
-        isExtended: true,
-        child: const Icon(Icons.playlist_add_check),
-      ),
-      ]
-      )
+class AutocompleteBasicExample extends StatelessWidget {
+  const AutocompleteBasicExample({super.key});
+
+  static const List<String> _kOptions = <String>[
+    'tomato',
+    'onion',
+    'potato',
+    'banana',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text == '') {
+          return const Iterable<String>.empty();
+        }
+        return _kOptions.where((String option) {
+          return option.contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) {
+        //return _addIngredient(selection);
+      },
     );
   }
 }
+
+//set state for the list of ingredients
 
 class RecipeList extends StatefulWidget {
   const RecipeList({super.key, required this.title});
@@ -583,47 +543,45 @@ class RecipeList extends StatefulWidget {
   State<RecipeList> createState() => _RecipeListState();
 }
 
-// Future<RecipeTest> _getRecipes() async {
-//     try {
-//       _counter = 3;
-
-//       ingredients = ["onions"];
-
-//       http.post(
-//         Uri.parse('http:/localhost:60034/recipes'),
-//         headers: <String, String>{
-//           'Content-Type': 'application/json; charset=UTF-8',
-//         },
-//         body: jsonEncode({
-//           'counter': _counter,
-//           'ingredients': ingredients,
-//         }),
-//       );
-
-//       final response = await http.get(
-//         Uri.parse('http:/localhost:60034/recipes'),
-//       );
-
-//       if (response.statusCode == 200) {
-//         return RecipeTest.fromJson(jsonDecode(response.body));
-//       } else {
-//         throw Exception('Failed to load cat fact');
-//       }
-//     } catch (e) {
-//       return RecipeTest("Failed to load recipes");
-//     }
-//   }
-
 // UNUSED!!!
 class _RecipeListState extends State<RecipeList> {
-  int _counter = 0;
   List<String> ingredients = [];
 
-  void _incrementCounter() {
+  void _addIngredient(String ingredient) {
     setState(() {
-      _counter++;
+      ingredients.add(ingredient);
     });
   }
+
+  void _removeIngredient(String ingredient) {
+    setState(() {
+      ingredients.remove(ingredient);
+    });
+  }
+
+  // void _openIngredientSelector() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //         builder: (context) => IngredientSelector(
+  //               addIngredient: _addIngredient,
+  //               removeIngredient: _removeIngredient,
+  //             )),
+  //   );
+  // }
+
+  // void _openshoppinglist() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //         builder: (context) => ShoppingList(
+  //               ingredients: ingredients,
+  //             )),
+  //   );
+  // }
+  // void _incrementCounter() {
+  //   setState(() {
+  //     _counter++;
+  //   });
+  // }
 
   void navigateToSearch(BuildContext context) {
     Navigator.of(context).push(
@@ -740,25 +698,13 @@ class _RecipeListState extends State<RecipeList> {
               ),
             ),
           ),
-          // Column(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: <Widget>[
-          //     const Text(
-          //       'You have pushed the button this many times:',
-          //     ),
-          //     Text(
-          //       '$_counter',
-          //       style: Theme.of(context).textTheme.headline4,
-          //     ),
-          //   ],
-          // ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.list_alt),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.list_alt),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
