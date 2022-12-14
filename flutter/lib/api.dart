@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -101,7 +103,6 @@ class CCApiConstants {
 
 class CCApi {
   Future<List<Ingredient>> getPossibleIngredients() async {
-    print(CCApiConstants.baseUrl);
     final response = await http.get(
         Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.ingredients}'));
     if (response.statusCode == 200) {
