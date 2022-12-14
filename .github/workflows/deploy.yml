@@ -50,5 +50,4 @@ jobs:
           KEY: ${{ env.SSHKEY }}
           script: |
             cd ${{ env.TARGET_PATH }}
-            docker compose -f ${{ env.COMPOSE_FILE }} down > ACTION_DEPLOY.log
-            docker compose -f ${{ env.COMPOSE_FILE }} up -d --build --force-recreate --remove-orphans >> ACTION_DEPLOY.log
+            docker compose -f ${{ env.COMPOSE_FILE }} up -d --build --force-recreate --remove-orphans > ACTION_DEPLOY.log
