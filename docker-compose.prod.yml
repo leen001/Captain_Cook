@@ -9,46 +9,42 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: unless-stopped
-  # adminer:
-  #   image: adminer
-  #   ports:
-  #     - 3001:8080
-  #   environment:
-  #     ADMINER_DEFAULT_SERVER: db
-  #     ADMINER_DESIGN: dracula
+    networks:
+      - default
   api:
     build:
       context: ./api
       dockerfile: Dockerfile
-    ports:
-      - 3000:3000
     depends_on:
       - db
     environment:
-      # PORT: 3000
-      # DEBUG: True
-      # SECRET_KEY:
+      PORT: 3000
       DB_HOST: db
       DB_USER: mariadb
       DB_PASSWORD: mariadb
       DB_DATABASE: cookbook
     env_file:
       - tokens.env
-    # volumes:
-    #   - ./api:/app
+    networks:
+      - default
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cc-api.entrypoints=https"
+      - "traefik.http.routers.cc-api.rule=Host(`captain-cook-api.big-sala.me`)"
+      - "traefik.http.routers.cc-api.tls=true"
+      - "traefik.http.routers.cc-api.tls.certresolver=http"
+      - "traefik.docker.network=web"
   web:
     build: ./flutter
-    ports:
-      - 8080:80
     depends_on:
       - api
     environment:
-      API_HOST: api
-      API_PORT: 3000
+      API_HOST: "https://captain-cook-api.big-sala.me"
     env_file:
       - tokens.env
     networks:
-      - default
+      # - default
       - web
     labels:
       - "traefik.enable=true"
