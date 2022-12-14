@@ -275,6 +275,8 @@ def init_ingredients(session: Session, clean=False):
     for recipe in recipes:
         for ingredient in recipe.ingredients[2:-2].split("', '"):
             ing_name = ListIngredient().fromRecipeIngredient(ingredient).name.lower()
+            if re.match(r".*\d.*", ing_name):
+                continue
             if len(ing_name) > 2 and ing_name not in in_db:
                 ingredient_names.add(ing_name)
     ingredients = [AvailableIngredient(i) for i in ingredient_names]
