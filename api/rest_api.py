@@ -290,3 +290,9 @@ if __name__ == "__main__":
     print("Closing db connection...")
     db.close()
     exit(0)
+else:
+    def create_app():
+        insert_from_csv(db, "inputData/recipe_details.csv", Recipe)
+        init_ingredients(db)
+        return app
+    gunicorn_app = create_app()

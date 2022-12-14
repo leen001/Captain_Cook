@@ -10,4 +10,4 @@ RUN pip install --upgrade gunicorn
 EXPOSE 3000
 COPY . /app
 ENTRYPOINT [ "gunicorn" ]
-CMD ["--bind", "0.0.0.0:3000", "rest_api:app"]
+CMD ["--bind", "0.0.0.0:3000", "rest_api:gunicorn_app"]
