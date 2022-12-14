@@ -1,11 +1,11 @@
-import 'package:captain_cook/widgets/shoppinglist.dart';
-import 'package:captain_cook/widgets/recipe_output.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'states.dart';
+import 'widgets/shoppinglist.dart';
+import 'widgets/recipe_output.dart';
 import 'widgets/auto_complete_ingredients.dart';
 import 'widgets/google_auth_status.dart';
 
