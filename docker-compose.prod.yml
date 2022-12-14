@@ -40,7 +40,7 @@ services:
     depends_on:
       - api
     environment:
-      API_HOST: "https://captain-cook-api.big-sala.me"
+      API_BASE_URL: "https://captain-cook-api.big-sala.me"
     env_file:
       - tokens.env
     networks:
