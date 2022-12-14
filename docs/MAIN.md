@@ -1,3 +1,4 @@
+[![Deploy to VPS](https://github.com/leen001/Captain_Cook/actions/workflows/deploy.yml/badge.svg)](https://github.com/leen001/Captain_Cook/actions/workflows/deploy.yml)
 # Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*
 Dokumentation für das Projekt *Captain Cook* im Rahmen des Kurses *Advanced Software Engineering* 2022 (DHBW Mannheim)
 Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini
@@ -18,6 +19,7 @@ Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurl
   - [Weitere Diagramme](#weitere-diagramme)
 - [Deployment und Operations](#deployment-und-operations)
   - [Deployment](#deployment)
+    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
   - [Operations](#operations)
   - [Statischer Code-Report](#statischer-code-report)
 
@@ -78,35 +80,67 @@ definiert. Diese sind:
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
 
+Die genutzen Container-Technologien ermöglichen ein einfaches Skalieren von UI und API. 
+
+Um registrierten Nutzern eine Datensichherheit zu bieten wird HTTPS für für Basis-Verschlüsselung zwischen Client und Server (UI und API) genutzt.
+Um weitere (Web-)Schwachstellen abzudecken, soll sich an der OWASP Top 10 als Katalog orientiert.
+  
+Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichkeit. Diese soll durch eine intuitive, einfache und übersichtliche UI umgesetzt werden. Daraus resultierend soll auch der Funktionsumfang auf das minimale beschränlkt werden.
 ### Domain-Driven-Design
 *EDA (Event-Driven-Architecture), SOA (Service-Oriented-Architecture)*
+![Domain-Driven-Design](domain-driven.drawio.png)
 
 ### Observability
 *Logging, Monitoring, Tracing*
+Das Logging wird mithilfe von Docker Compose realisiert. Dabei werden logs von  den einzelnen services gesammelt.
+Prometheus ist ein Open-source Tool das zum
+Jaeger
+logstash
+Beobachtet werden sollen zusätzlich die Antwortzeiten der Service
 
 ### Weitere Diagramme
-*Zustandsdiagramm: Benutzer, Sequenzdiagramm: Benutzer löschen, System-Konsistenz*
+*Zustandsdiagramm: Benutzer*
+![Zustandsdiagramm](StatusDiagramUser.drawio.png) 
 
+*Sequenzdiagramm: Benutzer löschen ,System-Konsistenz*
+![Aktivitätsdiagramm](ActivityDiagramUser.drawio.png)
+
+Zur  Erhaltung der Konsistenz bei der Entfernung eines Benutzers werden Datenbank Einträge gelöscht. Dabei sind Komponenten wie die Einkaufsliste oder Bewertungen von der Enfernung des Users betroffen. Da die Einkaufsliste nicht zwischne Usern geteilt wird, bleibt bei der Löschung dieser die Konsistenz erhalten. Bei  Bewertungen werden Ersteller durch "Entfernter Benutzer" ersetzt um eine sauber Trennung zu ermöglichen.
 ## Deployment und Operations
 ---
 
 ### Deployment
-*Model, B&D-Pipeline*
-GitHub Actions ist ein Tool von GitHub, das es Entwicklern ermöglicht, automatisierte Workflows für die Verwaltung und Bereitstellung ihres Codes zu erstellen. Mit GitHub Actions können Entwickler verschiedene Schritte in ihren Deployment-Workflows automatisieren, wie zum Beispiel das Builden, Testen und Veröffentlichen von Code.
+Für das Deployment haben wir uns für einen VPS als Zielumgebung entschieden. Ein VPS (Virtual Private Server) ist ein virtueller Server, der in einer Cloud-Umgebung betrieben wird. Im Gegensatz zu einem physischen Server teilt sich ein VPS eine Hardware-Infrastruktur mit anderen VPS, wodurch er kostengünstiger und flexibler ist. Ein VPS bietet die Leistung und Kontrolle eines dedizierten Servers, ist aber weniger teuer und einfacher zu verwalten.
+
+Beim Deployment der Anwendung auf einem VPS wird die Anwendung zunächst auf einem lokalen Entwicklungssystem entwickelt und getestet (siehe [docker-compose.yml](../docker-compose.yml)). Sobald die Anwendung bereit ist, wird sie auf den VPS hochgeladen und dort installiert. Der VPS bietet eine gesicherte und isolierte Umgebung, in der alle Komponenten der App betrieben werden können. Die Anwendung kann dann über das Internet von jedem Endgerät aus aufgerufen werden.
+
+Um die einzelnen Services (Frontend, API, Datenbank) gemeinsam zu starten, verwenden wir Docker-Compose. Docker-Compose ist ein Tool, das es Entwicklern ermöglicht, mehrere Docker-Container zu starten und zu verwalten. Docker-Compose verwendet dabei eine Konfigurationsdatei, in der die einzelnen Container definiert werden. Auf diese Weise wird das Deployment der Anwendung vereinfacht und beschleunigt.
+#### Build & Deployment Pipeline
+Die Build & Deployment Pipeline für dieses Projekt wurde mit Hilfe von GitHub Actions realisiert. GitHub Actions ist ein Tool, mit dem man automatisierte Workflows erstellen kann, die auf Ereignisse in einem GitHub-Repository ausgelöst werden. Dadurch kann man zum Beispiel automatisch einen Build-Prozess starten, wenn Änderungen in einem bestimmten Branch vorgenommen werden. Die erstellte Build-Version kann dann auf einem VPS oder in einer Cloud-Umgebung bereitgestellt werden, wobei auch hier wieder automatisierte Workflows genutzt werden können. GitHub Actions erleichtert das Erstellen und Verwalten von Build- und Deployment-Pipelines, indem es möglich ist, alles in einem GitHub-Repository zu konfigurieren und zu verwalten.
 
 Um Deployment mit GitHub Actions zu nutzen, müssen Entwickler zunächst einen Workflow in ihrem GitHub-Repository erstellen. Dieser Workflow besteht aus einer Reihe von Schritten, die in einer bestimmten Reihenfolge ausgeführt werden, um den Code bereitzustellen. Jeder Schritt kann dabei ein eigenes Skript oder eine Aktion von GitHub sein, die eine bestimmte Aufgabe ausführt.
 
 Unser Deployment-Workflow mit GitHub Actions sieht wie folgt aus:
-
-1. Code auf GitHub pushen
-2. Testen des Codes mithilfe von CI Tools gefolgt von 
+```mermaid
+graph LR
+  PUSH[Push auf den Branch main]
+  SQ[SonarQube-Scan]
+  subgraph VPS
+    COPY[Source-Code kopieren]
+    BUILD[Image-Build]
+    UP[Stack starten]
+  end
+  PUSH --> SQ
+  PUSH --> COPY
+  COPY --> BUILD
+  BUILD --> UP
+```
 
 ### Operations
 *Model*
 
 ### Statischer Code-Report
-*SonarQube*
-SonarQube ist eine Plattform für statische Codeanalyse, die Entwicklern dabei hilft, die Qualität und Sicherheit ihres Codes zu verbessern. Es bietet eine Reihe von Werkzeugen und Plugins, die es Entwicklern ermöglichen, ihren Code auf Fehler, Schwachstellen und potenzielle Verbesserungen zu überprüfen.
+*SonarQube* ist eine Plattform für statische Codeanalyse, die Entwicklern dabei hilft, die Qualität und Sicherheit ihres Codes zu verbessern. Es bietet eine Reihe von Werkzeugen und Plugins, die es Entwicklern ermöglichen, ihren Code auf Fehler, Schwachstellen und potenzielle Verbesserungen zu überprüfen.
 
 SonarQube unterstützt eine Vielzahl von Programmiersprachen, darunter Java, C#, C/C++, JavaScript und viele mehr. Es bietet auch eine integrierte Oberfläche, in der Entwickler die Ergebnisse der Codeanalyse anzeigen und verstehen können.
 
