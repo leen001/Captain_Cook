@@ -1,14 +1,13 @@
-import 'package:captain_cook/api.dart';
-import 'package:captain_cook/widgets/Shoppinglist.dart';
-import 'package:captain_cook/widgets/Recipe_Output.dart';
+import 'package:captain_cook/widgets/shoppinglist.dart';
+import 'package:captain_cook/widgets/recipe_output.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'states.dart';
-import 'widgets/AutoCompleteIngredients.dart';
+import 'widgets/auto_complete_ingredients.dart';
+import 'widgets/google_auth_status.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -195,92 +194,7 @@ class _MainAppState extends State<MainApp> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Consumer<AuthenticatedUser>(
-                      builder: (context, googleAuth, child) => Card(
-                          elevation: 10,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: FutureBuilder(
-                              future: googleAuth.isSignedIn,
-                              builder: (context, snapshot) => (snapshot.hasData)
-                                  ? (snapshot.data as bool)
-                                      ? Column(children: [
-                                          FutureBuilder(
-                                            future: googleAuth.user,
-                                            builder: (context, user) =>
-                                                RichText(
-                                              text: TextSpan(
-                                                text: "Logged in as ",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                                children: [
-                                                  (user.hasData &&
-                                                          user.data != null)
-                                                      ? TextSpan(
-                                                          text: (user.data
-                                                                  as GoogleSignInAccount)
-                                                              .displayName,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold))
-                                                      : const TextSpan(
-                                                          text: "Unknown",
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                await googleAuth.signOut();
-                                              },
-                                              child: const Text("Sign out"))
-                                        ])
-                                      : Column(children: [
-                                          const Text(
-                                            "Login",
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.indigo,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                await googleAuth.signIn();
-                                              },
-                                              child: const Text("Sign in")),
-                                          (googleAuth.hasError)
-                                              ? Text(
-                                                  googleAuth.error,
-                                                  style: const TextStyle(
-                                                      color: Colors.red),
-                                                )
-                                              : const SizedBox()
-                                        ])
-                                  : const Center(
-                                      child: SizedBox(
-                                        height: 50,
-                                        width: 50,
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-                            ),
-                          )),
-                    ),
-                  ),
+                  const GoogleAuthStatus(),
                 ],
               ),
             ),

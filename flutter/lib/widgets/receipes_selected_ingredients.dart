@@ -1,13 +1,7 @@
-import 'package:captain_cook/states.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:captain_cook/api.dart';
-import 'package:captain_cook/widgets/SearchBar.dart';
-import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart';
 
 const API_BASE_URL = String.fromEnvironment('API_BASE_URL',
     defaultValue: 'http://localhost:3000');
