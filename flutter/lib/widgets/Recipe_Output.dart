@@ -144,24 +144,8 @@ class _RecipeListState extends State<RecipeList> {
 
   Future<List<Recipe>> _getRecipes(BuildContext context) async {
     try {
-      final response = await http.post(
-        Uri.parse('$API_BASE_URL/recipes'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'count': 3,
-          'ingredients': Provider.of<SelectedIng>(context, listen: false).all,
-        }),
-      );
-      if (response.statusCode != 200) {
-        throw Exception('Failed to load recipes');
-      }
-      final Map<String, dynamic> json = jsonDecode(response.body);
-      final List<Recipe> recipes = [];
-      for (final recipe in json['recipes']) {
-        recipes.add(Recipe.fromJson(recipe));
-      }
+      final recipes = await CCApi().getRecipes(
+          Provider.of<AvailableIngredients>(context, listen: false).selected);
       return recipes;
     } catch (e) {
       print(e);

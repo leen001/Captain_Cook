@@ -1,9 +1,7 @@
 import 'package:captain_cook/states.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-//import 'dart:ffi';
 import 'package:captain_cook/api.dart';
-import 'package:captain_cook/widgets/IngredientSelector.dart';
 import 'package:captain_cook/widgets/SearchBar.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';

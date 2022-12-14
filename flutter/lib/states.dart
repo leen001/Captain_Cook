@@ -8,13 +8,20 @@ import 'package:http/http.dart' as http;
 
 class AvailableIngredients extends ChangeNotifier {
   final List<Ingredient> _ingredients = [];
+  final List<String> _selected = [];
 
   UnmodifiableListView<Ingredient> get all =>
       UnmodifiableListView(_ingredients);
 
+  UnmodifiableListView<String> get selected => UnmodifiableListView(_selected);
+
   Iterable<String> get names => _ingredients.map((e) => e.name);
 
   int get length => _ingredients.length;
+  bool get isEmpty => _ingredients.isEmpty;
+
+  int get selectedLength => _selected.length;
+  bool get noneSelected => _selected.isEmpty;
 
   void add(Ingredient ingredient) {
     _ingredients.add(ingredient);
@@ -42,91 +49,30 @@ class AvailableIngredients extends ChangeNotifier {
     return names.contains(ingredient.name);
   }
 
-  void selected(Ingredient ingredient) {
-    if (contains(ingredient)) {
-      remove(ingredient);
-    } else {
-      add(ingredient);
+  void select(String ingredient) {
+    if (_ingredients.map((i) => i.name).contains(ingredient) &&
+        !_selected.contains(ingredient)) {
+      _selected.add(ingredient);
+      print('selected: $ingredient');
+      notifyListeners();
     }
   }
 
-  bool get isEmpty => _ingredients.isEmpty;
+  void deselect(String ingredient) {
+    if (_selected.contains(ingredient)) {
+      _selected.remove(ingredient);
+      notifyListeners();
+    }
+  }
 
-  void _setFromJson(List<dynamic> json) {
-    Iterable<Ingredient> asIngredients =
-        json.map((i) => Ingredient.fromJson(i));
+  void loadFromApi(Future<List<Ingredient>> Function() apiCall) async {
     _ingredients.clear();
-    for (var i in asIngredients) {
-      _ingredients.add(i);
-    }
-    notifyListeners();
-  }
-
-  Future<bool> getFromApi(String baseUrl) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/ingredients'));
-      if (response.statusCode == 200) {
-        _setFromJson(jsonDecode(response.body));
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      print(e);
-      return false;
+    _ingredients.addAll(await apiCall());
+    if (_ingredients.isNotEmpty) {
+      notifyListeners();
     }
   }
 }
-
-class SelectedIng extends ChangeNotifier {
-  final List<String> _ingredients = [];
-
-  UnmodifiableListView<String> get all => UnmodifiableListView(_ingredients);
-
-  int get length => _ingredients.length;
-
-  void add(String ingredient) {
-    _ingredients.add(ingredient);
-    notifyListeners();
-  }
-
-  void remove(String ingredient) {
-    _ingredients.remove(ingredient);
-    notifyListeners();
-  }
-
-  void clear() {
-    _ingredients.clear();
-    notifyListeners();
-  }
-
-  void setAll(List<String> ingredients) {
-    _ingredients.clear();
-    _ingredients.addAll(ingredients);
-    notifyListeners();
-  }
-
-  bool contains(String ingredient) {
-    // List<String> names = _ingredients.map((e) => e.name).toList();
-    return _ingredients.contains(ingredient);
-  }
-
-  void selected(String ingredient) {
-    if (contains(ingredient)) {
-      remove(ingredient);
-    } else {
-      add(ingredient);
-    }
-  }
-}
-
-// class Ingredient {
-//   String name;
-//   String id;
-//   Icon icon;
-
-//   Ingredient(this.name, this.id, {this.icon = const Icon(Icons.restaurant)});
-// }
 
 class AuthenticatedUser extends ChangeNotifier {
   late GoogleSignIn _googleSignIn;

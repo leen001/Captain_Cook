@@ -1,27 +1,18 @@
-import 'dart:convert';
-import 'dart:html';
-
 import 'package:captain_cook/api.dart';
-import 'package:captain_cook/widgets/IngredientSelector.dart';
-import 'package:captain_cook/widgets/Receipes_SelectedIngredients.dart';
-import 'package:captain_cook/widgets/SearchBar.dart';
 import 'package:captain_cook/widgets/Shoppinglist.dart';
 import 'package:captain_cook/widgets/Recipe_Output.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'states.dart';
 
-const API_BASE_URL = String.fromEnvironment('API_BASE_URL',
-    defaultValue: 'http://localhost:3000');
-
-void main() {
+Future main() async {
+  await dotenv.load(fileName: ".env");
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (context) => AvailableIngredients()),
-    ChangeNotifierProvider(create: (context) => SelectedIng()),
     ChangeNotifierProvider(create: (context) => AuthenticatedUser()),
   ], builder: (context, child) => const MyApp()));
 }
@@ -50,22 +41,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  Color _favIconColor = Colors.grey;
-  List<String> _selectedIngredients = [];
-
-  // void zustandHandler(BuildContext context) {
-  //   var zustand = context.watch<AvailableIngredients>();
-  //   // if (zustand.selectedIngredients.length > 0) {
-  //   //   setState(() {
-  //   //     _favIconColor = Colors.red;
-  //   //   });
-  //   // } else {
-  //   //   setState(() {
-  //   //     _favIconColor = Colors.grey;
-  //   //   });
-  //   // }
-  // }
-
   void _openSettings() {
     showDialog(
         context: context,
@@ -133,18 +108,6 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // @override
-  // Widget build(BuildContext) {
-  //   return IconButton(
-  //       icon: Icon(Icons.star, color: _favIconColor),
-  //       onPressed: () {
-  //         setState(() {
-  //         _favIconColor = Colors.green;
-  //       });
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,13 +155,13 @@ class _MainAppState extends State<MainApp> {
                                 horizontal: 8, vertical: 16),
                             child: Column(
                               children: <Widget>[
-                                Consumer<SelectedIng>(
+                                Consumer<AvailableIngredients>(
                                   builder: (context, value, child) => Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       SizedBox(
-                                        child: Text(value.all
+                                        child: Text(value.selected
                                             .map((e) => e)
                                             .toList()
                                             .toString()),
@@ -211,7 +174,7 @@ class _MainAppState extends State<MainApp> {
                                     onPressed: () {
                                       _openRecipeOutput();
                                     },
-                                    icon: Icon(Icons.search),
+                                    icon: const Icon(Icons.search),
                                     color: Colors.indigo),
                                 const SizedBox(
                                   height: 20,
@@ -366,9 +329,8 @@ class _AutoCompleteIngredientsState extends State<AutoCompleteIngredients> {
   Widget build(BuildContext context) {
     AvailableIngredients ingredients =
         Provider.of<AvailableIngredients>(context);
-    SelectedIng selectedIng = Provider.of<SelectedIng>(context);
     if (ingredients.isEmpty) {
-      ingredients.getFromApi(API_BASE_URL);
+      ingredients.loadFromApi(CCApi().getPossibleIngredients);
     }
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -390,7 +352,7 @@ class _AutoCompleteIngredientsState extends State<AutoCompleteIngredients> {
         // Consumer<SelectedIng>(
         //   builder: (context, selectedIng, child) => selectedIng.add(selection),
         // );
-        selectedIng.add(selection);
+        ingredients.select(selection);
 
         //Navigator.pop(context, selection);
         return;

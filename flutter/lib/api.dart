@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class Recipes {
   final List ingredients;
@@ -74,13 +76,6 @@ class Recipe {
   }
 }
 
-class ApiConstants {
-  static String baseUrl = 'http://localhost:3000/';
-  static String usersEndpoint = '/users';
-  static String recipesEndpoint = '/recipes';
-  static String ingredientsEndpoint = '/ingredients';
-}
-
 class Ingredient {
   final String name;
   final String? icon;
@@ -92,5 +87,49 @@ class Ingredient {
       name: json['name'],
       icon: json['icon'],
     );
+  }
+}
+
+class CCApiConstants {
+  static String baseUrl = (dotenv.env['API_BASE_URL']!.isNotEmpty)
+      ? dotenv.env['API_BASE_URL']!
+      : 'http://localhost:3000';
+  static String users = '/users';
+  static String recipes = '/recipes';
+  static String ingredients = '/ingredients';
+}
+
+class CCApi {
+  Future<List<Ingredient>> getPossibleIngredients() async {
+    print(CCApiConstants.baseUrl);
+    final response = await http.get(
+        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.ingredients}'));
+    if (response.statusCode == 200) {
+      final List<dynamic> json = jsonDecode(response.body);
+      final List<Ingredient> ingredients =
+          json.map((i) => Ingredient.fromJson(i)).toList();
+      return ingredients;
+    } else {
+      throw Exception('Failed to load ingredients');
+    }
+  }
+
+  Future<List<Recipe>> getRecipes(List<String> ingredients,
+      {int count = 5}) async {
+    Map<String, String> headers = {'Content-type': 'application/json'};
+    String body = jsonEncode({'ingredients': ingredients, 'count': count});
+    final response = await http.post(
+        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.recipes}'),
+        headers: headers,
+        body: body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> json = jsonDecode(response.body);
+      final List<Recipe> recipes = json['recipes']
+          .map<Recipe>((i) => Recipe.fromJson(i))
+          .toList(growable: false);
+      return recipes;
+    } else {
+      throw Exception('Failed to load recipes: ${response.body}');
+    }
   }
 }

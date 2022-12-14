@@ -42,15 +42,17 @@ services:
     volumes:
       - ./api:/app
   web:
-    build: ./flutter
+    build:
+      context: ./flutter
+      dockerfile: Dockerfile
+      args:
+        API_BASE_URL: "https://captain-cook-api.big-sala.me"
+        # API_BASE_URL: "http://localhost:3000"
     ports:
       - 8080:80
     depends_on:
       - api
     restart: unless-stopped
-    environment:
-      API_HOST: api
-      API_PORT: 3000
     env_file:
       - tokens.env
 

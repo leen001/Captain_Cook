@@ -36,15 +36,16 @@ services:
       - "traefik.http.routers.cc-api.tls.certresolver=http"
       - "traefik.docker.network=web"
   web:
-    build: ./flutter
+    build:
+      context: ./flutter
+      dockerfile: Dockerfile
+      args:
+        API_BASE_URL: "https://captain-cook-api.big-sala.me"
     depends_on:
       - api
-    environment:
-      API_BASE_URL: "https://captain-cook-api.big-sala.me"
     env_file:
       - tokens.env
     networks:
-      # - default
       - web
     labels:
       - "traefik.enable=true"
