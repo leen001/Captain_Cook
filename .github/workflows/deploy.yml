@@ -1,6 +1,9 @@
 name: Deploy to VPS
 
 on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 env:
   HOST: captain-cook.big-sala.me
