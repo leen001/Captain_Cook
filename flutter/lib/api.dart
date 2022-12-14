@@ -1,24 +1,13 @@
 import 'dart:convert';
 
-class CatFact {
-  final String fact;
-  final int length;
-  CatFact(this.fact, this.length);
-
-  factory CatFact.fromJson(Map<String, dynamic> json) {
-    return CatFact(json['fact'], json['length']);
-  }
-}
-
-class RecipeTest {
+class Recipes {
   final List ingredients;
-  RecipeTest(this.ingredients);
+  Recipes(this.ingredients);
 
-  factory RecipeTest.fromJson(Map<String, dynamic> json) {
+  factory Recipes.fromJson(Map<String, dynamic> json) {
     String ingredients = json['ingredients'];
     List<String> ingredientsList = ingredients.split(',');
-    return RecipeTest(ingredientsList);
-    //return RecipeTest(jsonDecode());
+    return Recipes(ingredientsList);
   }
 }
 
@@ -88,6 +77,20 @@ class Recipe {
 class ApiConstants {
   static String baseUrl = 'http://localhost:3000/';
   static String usersEndpoint = '/users';
+  static String recipesEndpoint = '/recipes';
+  static String ingredientsEndpoint = '/ingredients';
 }
 
-//provider consumer das extern 
+class Ingredient {
+  final String name;
+  final String? icon;
+
+  const Ingredient({required this.name, this.icon});
+
+  factory Ingredient.fromJson(Map<String, dynamic> json) {
+    return Ingredient(
+      name: json['name'],
+      icon: json['icon'],
+    );
+  }
+}
