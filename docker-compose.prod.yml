@@ -34,6 +34,7 @@ services:
       - "traefik.http.routers.cc-api.rule=Host(`captain-cook-api.big-sala.me`)"
       - "traefik.http.routers.cc-api.tls=true"
       - "traefik.http.routers.cc-api.tls.certresolver=http"
+      - "traefik.http.services.cc-api.loadbalancer.server.port=3000"
       - "traefik.docker.network=web"
   web:
     build:
