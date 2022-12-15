@@ -248,12 +248,13 @@ docs.register(clear_list)
 
 
 @app.post("/recipes/<recipe_id>/rating")
-@use_kwargs({"rating": fields.Int(), "comment": fields.Str(allow_none=True)})
+@use_kwargs({"rating": fields.Int(), "comment": fields.Str(missing=None)})
 @marshal_with(RecipeSchema, code=200)
 @marshal_with(BasicError, code=404, description="Recipe not found")
 @marshal_with(BasicError, code=400, description="Wrong rating input or already rated")
 @authenticated
 def rate_recipe(recipe_id: int, rating: int, comment: str = None):
+    print(rating, comment)
     recipe = db.query(Recipe).filter_by(id=recipe_id).first()
     if not recipe:
         return ({"error": "Recipe not found"}, 404)

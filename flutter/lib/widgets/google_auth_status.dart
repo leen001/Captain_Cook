@@ -50,9 +50,7 @@ class GoogleAuthStatus extends StatelessWidget {
                               height: 10,
                             ),
                             ElevatedButton(
-                                onPressed: () async {
-                                  await googleAuth.signOut();
-                                },
+                                onPressed: () => googleAuth.signOut(),
                                 child: const Text("Sign out"))
                           ])
                         : Column(children: [

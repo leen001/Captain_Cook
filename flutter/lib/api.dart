@@ -27,7 +27,7 @@ class Recipe {
   final String recipe;
   final double recipe_servings;
   final String recipe_yield;
-  final int score;
+  final int? score;
   final String total_time;
   //final int uid;
 
@@ -74,8 +74,6 @@ class Recipe {
     for (var rating in json['ratings']) {
       ratings.add(Rating.fromJson(rating));
     }
-
-    print(json['rating_score']);
 
     return Recipe(
       json['id'],
@@ -254,9 +252,7 @@ class CCApi {
 
   Future<Recipe> addRatingToRecipe(int recipeId, int rating,
       Future<Map<String, String>>? authHeaders) async {
-    String body = jsonEncode({
-      'rating': rating,
-    });
+    String body = jsonEncode({'rating': rating});
     try {
       final response = await http.post(
           Uri.parse(

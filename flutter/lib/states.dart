@@ -89,7 +89,11 @@ class AuthenticatedUser extends ChangeNotifier {
   }
 
   bool get hasError => _error.isNotEmpty;
-  String get error => _error;
+  String get error {
+    String error = _error;
+    _error = '';
+    return error;
+  }
 
   Future<Map<String, String>>? get authHeaders =>
       _googleSignIn.currentUser?.authHeaders;
@@ -112,8 +116,7 @@ class AuthenticatedUser extends ChangeNotifier {
     }
   }
 
-  Future<void> signOut() async {
-    await _googleSignIn.disconnect();
-    notifyListeners();
+  void signOut() {
+    _googleSignIn.disconnect().then((_) => notifyListeners());
   }
 }

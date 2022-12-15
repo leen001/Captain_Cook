@@ -84,13 +84,6 @@ class _MainAppState extends State<MainApp> {
         });
   }
 
-  // void _openIngredientSelector() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => IngredientSelector()),
-  //   );
-  // }
-
   void _openRecipeOutput() {
     Navigator.push(
       context,
@@ -123,6 +116,45 @@ class _MainAppState extends State<MainApp> {
             icon: const Icon(Icons.settings),
             tooltip: "Settings",
             onPressed: _openSettings,
+          ),
+          FutureBuilder(
+            future: Provider.of<AuthenticatedUser>(context).isSignedIn,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(),
+                );
+              }
+              IconData iconData = (snapshot.data!) ? Icons.logout : Icons.login;
+              return Consumer<AuthenticatedUser>(
+                builder: (context, user, child) {
+                  if (user.hasError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          user.error,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                  return IconButton(
+                    icon: Icon(iconData),
+                    tooltip: (snapshot.data!) ? "Logout" : "Login",
+                    onPressed: () {
+                      if (snapshot.data!) {
+                        user.signOut();
+                      } else {
+                        user.signIn();
+                      }
+                    },
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
@@ -167,12 +199,7 @@ class _MainAppState extends State<MainApp> {
                                                     icon: const Icon(
                                                         Icons.search),
                                                     color: Colors.indigo),
-                                              ]
-                                              //  Text(value.selected
-                                              //     .map((e) => e)
-                                              //     .toList()
-                                              //     .toString()),
-                                              ),
+                                              ]),
                                         ),
                                       ),
                                     ],
@@ -188,20 +215,30 @@ class _MainAppState extends State<MainApp> {
               ),
             ),
           ),
-          const GoogleAuthStatus(),
+          // const GoogleAuthStatus(),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: _openshoppinglist,
-            tooltip: 'Shopping List',
-            heroTag: "shopping_list_open",
-            isExtended: true,
-            child: const Icon(Icons.playlist_add_check),
-          ),
-        ],
+      floatingActionButton: Consumer<AuthenticatedUser>(
+        builder: (context, user, child) => FutureBuilder(
+          future: user.isSignedIn,
+          builder: (context, snapshot) => (snapshot.hasData)
+              ? FloatingActionButton(
+                  onPressed: (snapshot.data!) ? _openshoppinglist : null,
+                  disabledElevation: 0,
+                  backgroundColor: (snapshot.data!)
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey,
+                  tooltip: 'Shopping List',
+                  heroTag: "shopping_list_open",
+                  isExtended: true,
+                  child: const Icon(Icons.playlist_add_check),
+                )
+              : const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(),
+                ),
+        ),
       ),
     );
   }
