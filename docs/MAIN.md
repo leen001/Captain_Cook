@@ -39,26 +39,24 @@ Oft bereiten Kunden eine Mahlzeit mithilfe von Koch-Websites oder Kochbüchern z
 Die Architekten entscheiden über Designs und neue Funktionen des Produkts, die in Zukunft die Anwendung 
 erweitern.
 
-Die Programmierer setzten die Design und Funktionsvorschläge auf die sich die Architekten geeinigt 
-haben in Code um.
+Die Programmierer setzten die Design und Funktionsvorschläge, auf die sich die Architekten geeinigt 
+haben, in Code um.
 
 Die Endnutzer sind die tatsächliche Zielgruppe der Anwendung und interagieren mit dieser um die 
-veröffentlichten Funktionen für sich zu verwenden. Hier kann in zwei Arten unterscheiden werden:
+veröffentlichten Funktionen für sich zu verwenden. Hier kann in zwei Arten unterschieden werden:
   
   1. Nutzer die lediglich den öffentlichen Teil der Anwendung (Rezeptsuche) verwenden
   2. Nutzer die eine Einkaufsliste verwalten möchten und sich hierzu mit einem Google Konto authentifizieren müssen
 
 Google OAuth und öffentliche API zur Token Validierung
 
-Hosting Service (VPS) damit die Anwendung im Internet über eine Webadresse erreichbar ist wird 
+Hosting Service (VPS) damit die Anwendung im Internet über eine Webadresse erreichbar ist.
 
 Die Datenbank speichert alle Daten und stellt diese wenn nötig dem Nutzer über die API und das Frontend
 zur Verfügung. In diesem Fall handelt es sich um eine MariaDB.
 
 Die API ist die Schnittstelle zwischen dem vom Nutzer verwendeten UI und der Datenbank um Eingaben des 
 Nutzers in dieser zu speichern und bei Gelegenheit wieder aus der Datenbank abzurufen.
-
-??? GitHub Actions, SonarQube ???
 
 <!-- TODO -->
 
@@ -115,17 +113,14 @@ definiert. Diese sind:
 
 - Als User möchte ich Rezepte bewerten, um meine Meinung zum Rezept zu äußern aber auch Verbesserungsvorschläge für andere Nutzer zu hinterlassen. Dadurch möchte ich auch einen Austausch mit anderen Nutzern der Anwendung haben und ermöglichen.
 
-- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld spare und die Lebensmittelverschwendung vorbeugen kann.
+- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld spare und Lebensmittelverschwendung vorbeugen kann.
 
-- Als User möchte ich  die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Hinzufügen von Bewertungegn und Erstellung einer Einkaufsliste zu nutzen.
+- Als User möchte ich die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Bewerten von Rezepten und das Erstellen bzw. Verwalten einer Einkaufsliste zu nutzen.
 
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
 
 Die genutzen Container-Technologien ermöglichen ein einfaches Skalieren von UI und API. 
-Mit MariaDB Entwerprise ist die Anzahl der Kerne, der Arbeitsspeicher und die Speicherkapazität leicht zu erhöhen.
-Um eine horizontale Skalierung zu gewährleisten können auch mehrere Instanzen genutzt werden.
-Das nicht vorhandene Budget für dieses Projekt verhindert allerdings den Einsatz einer MariaDB Enterprise Lizenz.
 
 MariaDB ist eine Open-Source-Datenbank, die skalierbar ist, indem sie die Verwendung von Clustering und Replikation ermöglicht, um die Leistung und Verfügbarkeit zu verbessern. Dies bedeutet, dass MariaDB in der Lage ist, Daten auf mehreren Servern zu speichern und zu verarbeiten, um die Belastung zu verteilen und die Leistung zu erhöhen.
 
@@ -140,16 +135,23 @@ Um weitere (Web-)Schwachstellen abzudecken, soll sich an der OWASP Top 10 als Ka
   
 Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichkeit. Diese soll durch eine intuitive, einfache und übersichtliche UI umgesetzt werden. Daraus resultierend soll auch der Funktionsumfang auf das minimale beschränlkt werden.
 
-Ausfallsicherheit und Redundanz ist über Backups sowie Notfall-Instanzen der Datenbank abgedeckt, falls die Haupt Instanz ausfallen sollte. 
+Ausfallsicherheit und Redundanz ist über Backups sowie Notfall-Instanzen der Datenbank abzudecken, falls die Haupt Instanz ausfallen sollte. 
+
+Ausblick: Mit MariaDB Enterprise ist die Anzahl der Kerne, der Arbeitsspeicher und die Speicherkapazität leicht zu erhöhen.
+Um eine horizontale Skalierung zu gewährleisten können auch mehrere Instanzen genutzt werden.
+Das nicht vorhandene Budget für dieses Projekt verhindert allerdings den Einsatz einer MariaDB Enterprise Lizenz.
+
 ### Domain-Driven-Design
 *EDA (Event-Driven-Architecture), SOA (Service-Oriented-Architecture)*
 ![Domain-Driven-Design](domain-driven.drawio.png)
 
-Wie veranschaulicht besteht das Domain Driven Design aus 3 Domains: Rezept-Daten, Einkaufsliste und Such-Domäne(Such-Ausgabe). Das Modell für die Rezept-Daten ist in der Datei recipe.py zu finden. In der Datei shopping_list.py ist das Modell für die Einkaufsliste zu finden und die Datei recommendation_system.py enthält das Modell für die Such-Ausgabe.
+Wie veranschaulicht besteht unser Design aus 3 Domains: Rezept-Daten, Einkaufsliste und Such-Domäne(Such-Ausgabe).
 
- 
- #### API
-Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). Dabei ist a*b die Skalarprodukt von  a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
+<!-- TODO-->
+
+#### API
+Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). 
+Dabei ist a*b die Skalarprodukt von a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
 
 Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
 Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
@@ -158,7 +160,6 @@ Für die Berechnung der Cosinus-Ähnlichkeit wird die Funktion cosine_similarity
 
 ### Observability
 *Logging, Monitoring, Tracing*
-cpntaoner deülpyen logs einsehen, metirken cpu auslast monitoren
 
 Aktuell ist das Observability begrenzt, da es zurzeit nur durch die Nutzung von Docker-Container für das Software Deployment stattfindet. Die Möglichkeit, Logs anzuzeigen, wird durch die Verwendung von Containern bereitgestellt. Darüber hinaus werden für die Überwachung nützliche Metriken wie die CPU-Auslastung aufgezeichnet.
 Zukünftig soll aber  Observability in größerem Maßstab mit Hilfe verschiedener Tools möglich sein.
@@ -182,8 +183,6 @@ Zudem bietet dieses Tool eine benutzerfreundliche Benutzeroberfläche, die es er
 
 Logstash ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln, zu verarbeiten und in einem Format bereitzustellen, welches die Weiternutzung vereinfacht. Es kann verwendet werden, um Logs von verschiedenen Quellen zu sammeln und in einem zentralen Repository zu speichern, sodass Entwickler leicht auf die Log-Daten zugreifen und sie verwenden können.
 
-
-
 ### Weitere Diagramme
 *Zustandsdiagramm: Benutzer*
 ![Zustandsdiagramm](StatusDiagramUser.drawio.png) 
@@ -201,6 +200,7 @@ Für das Deployment haben wir uns für einen VPS als Zielumgebung entschieden. E
 Beim Deployment der Anwendung auf einem VPS wird die Anwendung zunächst auf einem lokalen Entwicklungssystem entwickelt und getestet (siehe [docker-compose.yml](../docker-compose.yml)). Sobald die Anwendung bereit ist, wird sie auf den VPS hochgeladen und dort installiert. Der VPS bietet eine gesicherte und isolierte Umgebung, in der alle Komponenten der App betrieben werden können. Die Anwendung kann dann über das Internet von jedem Endgerät aus aufgerufen werden.
 
 Um die einzelnen Services (Frontend, API, Datenbank) gemeinsam zu starten, verwenden wir Docker-Compose. Docker-Compose ist ein Tool, das es Entwicklern ermöglicht, mehrere Docker-Container zu starten und zu verwalten. Docker-Compose verwendet dabei eine Konfigurationsdatei, in der die einzelnen Container definiert werden. Auf diese Weise wird das Deployment der Anwendung vereinfacht und beschleunigt.
+
 #### Build & Deployment Pipeline
 Die Build & Deployment Pipeline für dieses Projekt wurde mit Hilfe von GitHub Actions realisiert. GitHub Actions ist ein Tool, mit dem man automatisierte Workflows erstellen kann, die auf Ereignisse in einem GitHub-Repository ausgelöst werden. Dadurch kann man zum Beispiel automatisch einen Build-Prozess starten, wenn Änderungen in einem bestimmten Branch vorgenommen werden. Die erstellte Build-Version kann dann auf einem VPS oder in einer Cloud-Umgebung bereitgestellt werden, wobei auch hier wieder automatisierte Workflows genutzt werden können. GitHub Actions erleichtert das Erstellen und Verwalten von Build- und Deployment-Pipelines, indem es möglich ist, alles in einem GitHub-Repository zu konfigurieren und zu verwalten.
 
