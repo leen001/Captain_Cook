@@ -5,27 +5,25 @@ Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurl
 ---
 
 # Inhaltsverzeichnis
-- [Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*](#koch-mit-deinem-kühlschrank---rezepte-für-deine-reste-captain-cook)
-  - [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
-- [Inhaltsverzeichnis](#inhaltsverzeichnis)
-  - [Motivation](#motivation)
-    - [Akteure](#akteure)
-  - [Architektur](#architektur)
-    - [Komponentendiagramm](#komponentendiagramm)
-    - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
-    - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
-    - [Architektur-Entscheidungen](#architektur-entscheidungen)
-    - [Funktionale Anforderungen](#funktionale-anforderungen)
-    - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
-    - [Domain-Driven-Design](#domain-driven-design)
-      - [API](#api)
-    - [Observability](#observability)
-    - [Weitere Diagramme](#weitere-diagramme)
-  - [Deployment und Operations](#deployment-und-operations)
-    - [Deployment](#deployment)
-      - [Build \& Deployment Pipeline](#build--deployment-pipeline)
-    - [Operations](#operations)
-    - [Statischer Code-Report](#statischer-code-report)
+- [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
+- [Motivation](#motivation)
+  - [Akteure](#akteure)
+- [Architektur](#architektur)
+  - [Komponentendiagramm](#komponentendiagramm)
+  - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
+  - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
+  - [Architektur-Entscheidungen](#architektur-entscheidungen)
+  - [Funktionale Anforderungen](#funktionale-anforderungen)
+  - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
+  - [Domain-Driven-Design](#domain-driven-design)
+    - [API](#api)
+  - [Observability](#observability)
+  - [Weitere Diagramme](#weitere-diagramme)
+- [Deployment und Operations](#deployment-und-operations)
+  - [Deployment](#deployment)
+    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
+  - [Operations](#operations)
+  - [Statischer Code-Report](#statischer-code-report)
 
 
 ## Motivation
@@ -290,9 +288,26 @@ Wie veranschaulicht besteht unser Design aus 3 Domains: Rezept-Daten, Einkaufsli
 
 
 #### API
-Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren $a$ und $b$ als: 
-$$ cos(a,b) = \frac{a*b}{(|a|*|b|)} $$ 
-Dabei ist $a*b$ die Skalarprodukt von $a$ und $b$ und $|a|$ die Länge des Vektors $a$ und $|b|$ die Länge des Vektors $b$. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
+```mermaid
+graph TB
+    SC[Web-Scraper]
+    R[Rezept-Datensatz]
+    Z[Zutaten-Liste]
+    VEC[Algorithmus: TF-IDF-Vectorizer]
+    MAP[Zuordnung: Rezepte mit gewichteten Zutaten]
+    ZIH[verfügbare Zutaten: Kühlschrank, etc.]
+    COS[Ähnlichkeits-Berechnung]
+    RR[Rezept-Empfehlungen]
+
+    SC --> R
+    R -->|Bereinigung: Plural-Formen, etc.| Z
+    R & Z --> VEC --> MAP
+    MAP & ZIH & R --> COS
+    COS --> RR
+```
+
+Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). 
+Dabei ist a*b die Skalarprodukt von a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
 
 Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
 Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.

@@ -1,9 +1,9 @@
 - [ ] Dokumentation
   - [x] Operational Model
-  - [ ] Observability
+  - [-] Observability
     - [ ] aktuell nur begrenzt über *Portainer*
-    - [ ] perspektivisch geplant: *Prometheus*, *Grafana*, etc.
-  - [ ] User-Stories (als Ergänzung zu Use-Cases)
+    - [x] perspektivisch geplant: *Prometheus*, *Grafana*, etc.
+  - [x] User-Stories (als Ergänzung zu Use-Cases)
   - [x] Akteure (Benutzer, Systeme, Hardware)
   - [ ] Domain-Driven-Design (wo event-driven?)
   - [x] Skalierbarkeits-Modell (Konzept)
