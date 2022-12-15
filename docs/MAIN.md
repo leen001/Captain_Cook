@@ -5,27 +5,25 @@ Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurl
 ---
 
 # Inhaltsverzeichnis
-- [Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*](#koch-mit-deinem-kühlschrank---rezepte-für-deine-reste-captain-cook)
-  - [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
-- [Inhaltsverzeichnis](#inhaltsverzeichnis)
-  - [Motivation](#motivation)
-    - [Akteure](#akteure)
-  - [Architektur](#architektur)
-    - [Komponentendiagramm](#komponentendiagramm)
-    - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
-    - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
-    - [Architektur-Entscheidungen](#architektur-entscheidungen)
-    - [Funktionale Anforderungen](#funktionale-anforderungen)
-    - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
-    - [Domain-Driven-Design](#domain-driven-design)
-      - [API](#api)
-    - [Observability](#observability)
-    - [Weitere Diagramme](#weitere-diagramme)
-  - [Deployment und Operations](#deployment-und-operations)
-    - [Deployment](#deployment)
-      - [Build \& Deployment Pipeline](#build--deployment-pipeline)
-    - [Operations](#operations)
-    - [Statischer Code-Report](#statischer-code-report)
+- [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
+- [Motivation](#motivation)
+  - [Akteure](#akteure)
+- [Architektur](#architektur)
+  - [Komponentendiagramm](#komponentendiagramm)
+  - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
+  - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
+  - [Architektur-Entscheidungen](#architektur-entscheidungen)
+  - [Funktionale Anforderungen](#funktionale-anforderungen)
+  - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
+  - [Domain-Driven-Design](#domain-driven-design)
+    - [API](#api)
+  - [Observability](#observability)
+  - [Weitere Diagramme](#weitere-diagramme)
+- [Deployment und Operations](#deployment-und-operations)
+  - [Deployment](#deployment)
+    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
+  - [Operations](#operations)
+  - [Statischer Code-Report](#statischer-code-report)
 
 
 ## Motivation
@@ -150,6 +148,24 @@ Wie veranschaulicht besteht unser Design aus 3 Domains: Rezept-Daten, Einkaufsli
 <!-- TODO-->
 
 #### API
+```mermaid
+graph TB
+    SC[Web-Scraper]
+    R[Rezept-Datensatz]
+    Z[Zutaten-Liste]
+    VEC[Algorithmus: TF-IDF-Vectorizer]
+    MAP[Zuordnung: Rezepte mit gewichteten Zutaten]
+    ZIH[verfügbare Zutaten: Kühlschrank, etc.]
+    COS[Ähnlichkeits-Berechnung]
+    RR[Rezept-Empfehlungen]
+
+    SC --> R
+    R -->|Bereinigung: Plural-Formen, etc.| Z
+    R & Z --> VEC --> MAP
+    MAP & ZIH & R --> COS
+    COS --> RR
+```
+
 Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). 
 Dabei ist a*b die Skalarprodukt von a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
 
