@@ -16,11 +16,14 @@ class Recipes {
 }
 
 class Recipe {
+  final int id;
   final String cooking_time;
   final List ingredients;
   final String prep_time;
   final List r_direction;
   final List r_nutrition_info;
+  final List<Rating> ratings;
+  final double? rating_score;
   final String recipe;
   final double recipe_servings;
   final String recipe_yield;
@@ -29,11 +32,14 @@ class Recipe {
   //final int uid;
 
   Recipe(
+    this.id,
     this.cooking_time,
     this.ingredients,
     this.prep_time,
     this.r_direction,
     this.r_nutrition_info,
+    this.ratings,
+    this.rating_score,
     this.recipe,
     this.recipe_servings,
     this.recipe_yield,
@@ -49,12 +55,14 @@ class Recipe {
     ingredientsList[ingredientsList.length - 1] =
         ingredientsList[ingredientsList.length - 1].substring(
             0, ingredientsList[ingredientsList.length - 1].length - 2);
+
     String r_direction = json['r_direction'];
     List<String> r_directionList = r_direction.split('\', \'');
     r_directionList[0] = r_directionList[0].substring(2);
     r_directionList[r_directionList.length - 1] =
         r_directionList[r_directionList.length - 1].substring(
             0, r_directionList[r_directionList.length - 1].length - 2);
+
     String r_nutrition_info = json['r_nutrition_info'];
     List<String> r_nutrition_infoList = r_nutrition_info.split(';');
     r_nutrition_infoList[0] = r_nutrition_infoList[0].substring(2);
@@ -62,18 +70,27 @@ class Recipe {
         r_nutrition_infoList[r_nutrition_infoList.length - 1].substring(0,
             r_nutrition_infoList[r_nutrition_infoList.length - 1].length - 2);
 
+    List<Rating> ratings = <Rating>[];
+    for (var rating in json['ratings']) {
+      ratings.add(Rating.fromJson(rating));
+    }
+
+    print(json['rating_score']);
+
     return Recipe(
+      json['id'],
       json['cooking_time'],
       ingredientsList,
       json['prep_time'],
       r_directionList,
       r_nutrition_infoList,
+      ratings,
+      json['rating_score'],
       json['recipe'],
       json['recipe_servings'],
       json['recipe_yield'],
       json['score'],
       json['total_time'],
-      //json['uid'],
     );
   }
 }
@@ -94,6 +111,26 @@ class Ingredient {
   }
 }
 
+class Rating {
+  final int id;
+  final int recipe_id;
+  final int user_id;
+  final int rating;
+  final String? comment;
+
+  Rating(this.id, this.recipe_id, this.user_id, this.rating, this.comment);
+
+  factory Rating.fromJson(Map<String, dynamic> json) {
+    return Rating(
+      json['id'],
+      json['recipe_id'],
+      json['user_id'],
+      json['rating'],
+      json['comment'],
+    );
+  }
+}
+
 class CCApiConstants {
   static String baseUrl = (dotenv.env['API_BASE_URL']!.isNotEmpty)
       ? dotenv.env['API_BASE_URL']!
@@ -106,15 +143,19 @@ class CCApiConstants {
 
 class CCApi {
   Future<List<Ingredient>> getPossibleIngredients() async {
-    final response = await http.get(
-        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.ingredients}'));
-    if (response.statusCode == 200) {
-      final List<dynamic> json = jsonDecode(response.body);
-      final List<Ingredient> ingredients =
-          json.map((i) => Ingredient.fromJson(i)).toList();
-      return ingredients;
-    } else {
-      throw Exception('Failed to load ingredients');
+    try {
+      final response = await http.get(
+          Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.ingredients}'));
+      if (response.statusCode == 200) {
+        final List<dynamic> json = jsonDecode(response.body);
+        final List<Ingredient> ingredients =
+            json.map((i) => Ingredient.fromJson(i)).toList();
+        return ingredients;
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to load ingredients: $e');
     }
   }
 
@@ -122,18 +163,22 @@ class CCApi {
       {int count = 5}) async {
     Map<String, String> headers = {'Content-type': 'application/json'};
     String body = jsonEncode({'ingredients': ingredients, 'count': count});
-    final response = await http.post(
-        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.recipes}'),
-        headers: headers,
-        body: body);
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> json = jsonDecode(response.body);
-      final List<Recipe> recipes = json['recipes']
-          .map<Recipe>((i) => Recipe.fromJson(i))
-          .toList(growable: false);
-      return recipes;
-    } else {
-      throw Exception('Failed to load recipes: ${response.body}');
+    try {
+      final response = await http.post(
+          Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.recipes}'),
+          headers: headers,
+          body: body);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> json = jsonDecode(response.body);
+        final List<Recipe> recipes = json['recipes']
+            .map<Recipe>((i) => Recipe.fromJson(i))
+            .toList(growable: false);
+        return recipes;
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to load recipes: $e');
     }
   }
 
@@ -153,13 +198,17 @@ class CCApi {
       Future<Map<String, String>>? authHeaders) async {
     Map<String, String> headers = await authHeaders ?? {};
     headers['Content-type'] = 'application/json';
-    final response = await http.get(
-        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}'),
-        headers: _buildAuthHeaders(await authHeaders));
-    if (response.statusCode == 200) {
-      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
-    } else {
-      throw Exception('Failed to load shopping list: ${response.body}');
+    try {
+      final response = await http.get(
+          Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}'),
+          headers: _buildAuthHeaders(await authHeaders));
+      if (response.statusCode == 200) {
+        return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to load shopping list: $e');
     }
   }
 
@@ -168,15 +217,18 @@ class CCApi {
     String body = jsonEncode({
       'ingredient': {'name': ingredient}
     });
-    final response = await http.post(
-        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
-        headers: _buildAuthHeaders(await authHeaders),
-        body: body);
-    if (response.statusCode == 200) {
-      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
-    } else {
-      throw Exception(
-          'Failed to add ingredient to shopping list: ${response.body}');
+    try {
+      final response = await http.post(
+          Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
+          headers: _buildAuthHeaders(await authHeaders),
+          body: body);
+      if (response.statusCode == 200) {
+        return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to add ingredient to shopping list: $e');
     }
   }
 
@@ -185,15 +237,41 @@ class CCApi {
     String body = jsonEncode({
       'ingredient_id': ingredientId,
     });
-    final response = await http.delete(
-        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
-        headers: _buildAuthHeaders(await authHeaders),
-        body: body);
-    if (response.statusCode == 200) {
-      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
-    } else {
-      throw Exception(
-          'Failed to remove ingredient from shopping list: ${response.body}');
+    try {
+      final response = await http.delete(
+          Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
+          headers: _buildAuthHeaders(await authHeaders),
+          body: body);
+      if (response.statusCode == 200) {
+        return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to remove ingredient from shopping list: $e');
+    }
+  }
+
+  Future<Recipe> addRatingToRecipe(int recipeId, int rating,
+      Future<Map<String, String>>? authHeaders) async {
+    String body = jsonEncode({
+      'rating': rating,
+    });
+    try {
+      final response = await http.post(
+          Uri.parse(
+              '${CCApiConstants.baseUrl}${CCApiConstants.recipes}/$recipeId/rating'),
+          headers: _buildAuthHeaders(await authHeaders),
+          body: body);
+      if (response.statusCode == 200) {
+        return Recipe.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 400) {
+        throw Exception('Invalid rating or already rated');
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to add rating to recipe: $e');
     }
   }
 }

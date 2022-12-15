@@ -129,7 +129,7 @@ class ShoppinglistItem extends StatelessWidget {
     required this.remove,
     this.id = 0,
     this.disabled = false,
-  }) : super(key: ObjectKey(name));
+  }) : super(key: ObjectKey(name + id.toString()));
 
   final String name;
   final VoidCallback remove;

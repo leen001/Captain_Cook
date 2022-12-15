@@ -35,6 +35,31 @@ Die grundsätzliche Motivation des Projektes besteht darin dazu beizutragen, die
 Oft bereiten Kunden eine Mahlzeit mithilfe von Koch-Websites oder Kochbüchern zu. Doch nicht immer haben sie die benötigten Zutaten zur Hand. Daher basieren die Empfehlungen des Empfehlungssystems auf Produkten, die der Kunde entweder zu Hause im Kühlschrank und im Vorratsschrank hat oder die er gerade im örtlichen Supermarkt gekauft hat. Sollte doch einmal etwas fehlen, lassen sich einzelne Zutaten direkt auf die Einkaufsliste setzen, sodass die bereits vorhandenen optimal genutzt werden können.
 
 ### Akteure
+
+Die Architekten entscheiden über Designs und neue Funktionen des Produkts, die in Zukunft die Anwendung 
+erweitern.
+
+Die Programmierer setzten die Design und Funktionsvorschläge auf die sich die Architekten geeinigt 
+haben in Code um.
+
+Die Endnutzer sind die tatsächliche Zielgruppe der Anwendung und interagieren mit dieser um die 
+veröffentlichten Funktionen für sich zu verwenden. Hier kann in zwei Arten unterscheiden werden:
+  
+  1. Nutzer die lediglich den öffentlichen Teil der Anwendung (Rezeptsuche) verwenden
+  2. Nutzer die eine Einkaufsliste verwalten möchten und sich hierzu mit einem Google Konto authentifizieren müssen
+
+Google OAuth und öffentliche API zur Token Validierung
+
+Hosting Service (VPS) damit die Anwendung im Internet über eine Webadresse erreichbar ist wird 
+
+Die Datenbank speichert alle Daten und stellt diese wenn nötig dem Nutzer über die API und das Frontend
+zur Verfügung. In diesem Fall handelt es sich um eine MariaDB.
+
+Die API ist die Schnittstelle zwischen dem vom Nutzer verwendeten UI und der Datenbank um Eingaben des 
+Nutzers in dieser zu speichern und bei Gelegenheit wieder aus der Datenbank abzurufen.
+
+??? GitHub Actions, SonarQube ???
+
 <!-- TODO -->
 
 ## Architektur
@@ -98,11 +123,24 @@ definiert. Diese sind:
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
 
 Die genutzen Container-Technologien ermöglichen ein einfaches Skalieren von UI und API. 
+Mit MariaDB Entwerprise ist die Anzahl der Kerne, der Arbeitsspeicher und die Speicherkapazität leicht zu erhöhen.
+Um eine horizontale Skalierung zu gewährleisten können auch mehrere Instanzen genutzt werden.
+Das nicht vorhandene Budget für dieses Projekt verhindert allerdings den Einsatz einer MariaDB Enterprise Lizenz.
+
+MariaDB ist eine Open-Source-Datenbank, die skalierbar ist, indem sie die Verwendung von Clustering und Replikation ermöglicht, um die Leistung und Verfügbarkeit zu verbessern. Dies bedeutet, dass MariaDB in der Lage ist, Daten auf mehreren Servern zu speichern und zu verarbeiten, um die Belastung zu verteilen und die Leistung zu erhöhen.
+
+Flask ist ein leichtgewichtiges Web-Framework für Python, das skalierbar ist, indem es die Verwendung von Front-End-Caching und Load Balancing ermöglicht. Dies bedeutet, dass Flask in der Lage ist, die Last auf mehrere Server zu verteilen und gecachte Daten zu verwenden, um die Leistung zu verbessern.
+
+Flutter ist ein Open-Source-Framework für die Entwicklung von mobilen Anwendungen, das skalierbar ist, indem es die Verwendung von Hot Reload und Hot Restart ermöglicht. Dies bedeutet, dass Flutter in der Lage ist, schnell Änderungen im Code zu übernehmen und die Anwendung ohne Verlust des Zustands neu zu starten, wodurch die Entwicklungszeit verkürzt und die Leistung verbessert wird.
+
+Insgesamt sind MariaDB, Flask und Flutter in der Lage, in einem Container skaliert zu werden, indem verschiedene Techniken und Funktionen verwendet werden, um die Leistung und Verfügbarkeit zu verbessern. Die genauen Details und Möglichkeiten hängen jedoch von der spezifischen Implementierung und den Anforderungen der Anwendung ab.
 
 Um registrierten Nutzern eine Datensichherheit zu bieten wird HTTPS für für Basis-Verschlüsselung zwischen Client und Server (UI und API) genutzt.
 Um weitere (Web-)Schwachstellen abzudecken, soll sich an der OWASP Top 10 als Katalog orientiert.
   
 Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichkeit. Diese soll durch eine intuitive, einfache und übersichtliche UI umgesetzt werden. Daraus resultierend soll auch der Funktionsumfang auf das minimale beschränlkt werden.
+
+Ausfallsicherheit und Redundanz ist über Backups sowie Notfall-Instanzen der Datenbank abgedeckt, falls die Haupt Instanz ausfallen sollte. 
 ### Domain-Driven-Design
 *EDA (Event-Driven-Architecture), SOA (Service-Oriented-Architecture)*
 ![Domain-Driven-Design](domain-driven.drawio.png)
@@ -185,7 +223,8 @@ graph LR
 ```
 
 ### Operations
-*Model*
+*Operational Model*
+![Operationsmodel](operationalModelFinal.png)
 
 ### Statischer Code-Report
 *SonarQube* ist eine Plattform für statische Codeanalyse, die Entwicklern dabei hilft, die Qualität und Sicherheit ihres Codes zu verbessern. Es bietet eine Reihe von Werkzeugen und Plugins, die es Entwicklern ermöglichen, ihren Code auf Fehler, Schwachstellen und potenzielle Verbesserungen zu überprüfen.

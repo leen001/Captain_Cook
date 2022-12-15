@@ -94,10 +94,7 @@ class _MainAppState extends State<MainApp> {
   void _openRecipeOutput() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => const RecipeList(
-                selectedIngredients: [],
-              )),
+      MaterialPageRoute(builder: (context) => const RecipeList()),
     );
   }
 

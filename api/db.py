@@ -148,7 +148,7 @@ class Recipe(Base):
         self.r_nutrition_info = r_nutrition_info
 
     def _calculate_rating_score(self):
-        return round(sum([r.rating for r in self.ratings]) / len(self.ratings), 1) if len(self.ratings) > 0 else None
+        return round(sum([r.rating for r in self.ratings]) / len(self.ratings), 1) if len(self.ratings) > 0 else -1
 
     def asSchemaDict(self, include_ratings=True):
         recipe = RecipeSchema().dump(self)
