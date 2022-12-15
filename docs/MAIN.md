@@ -72,7 +72,8 @@ MariaDB ist ein Fork des beliebten Datenbank-Management-Systems MySQL. Es ist be
 Zusammen bieten diese Technologien eine leistungsstarke und flexible Architektur für unser Projekt. Flutter kann verwendet werden, um benutzerfreundliche und ansprechende Interfaces zu erstellen. Flask bietet einen einfachen und skalierbaren Back-End und MariaDB kann als zuverlässige und leistungsstarke Datenbank dienen.
 
 ### Funktionale Anforderungen
-*Use-Cases/User-Stories*
+*Use-Cases*
+
 Für die funktionalen Anforderungen wurden vier Use-Cases 
 definiert. Diese sind:
 - Die Anwendung muss es Benutzern ermöglichen, Rezepte abzufragen.
@@ -80,6 +81,15 @@ definiert. Diese sind:
 - Die Anwendung muss es Benutzern ermöglichen, eine Einkaufsliste zu benutzen/bearbeiten.
 - Die Anwendung muss es Benutzern ermöglichen, sich an- und abzumelden.
 
+*User Stories*
+
+- Als User möchte ich mit der Anwendung Rezeptvorschläge abfragen, um Lebensmittelverschwendung durch Wiederverwertung von zu Hause verbliebenen Resten zu verringern.
+
+- Als User möchte ich Rezepte bewerten, um meine Meinung zum Rezept sowie Verbesserungsvorschläge dazu mit anderen Nutzern der Anwendung auszutauschen.
+
+- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld sparen und Lebensmittelverschwendung vorbeugen kann.
+
+- Als User möchte ich  die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Hinzufügen von Bewertungegn und Erstellung einer Einkaufsliste nutzen zu können.
 
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
@@ -96,11 +106,31 @@ Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichke
 
 ### Observability
 *Logging, Monitoring, Tracing*
-Das Logging wird mithilfe von Docker Compose realisiert. Dabei werden logs von  den einzelnen services gesammelt.
-Prometheus ist ein Open-source Tool das zum
-Jaeger
-logstash
-Beobachtet werden sollen zusätzlich die Antwortzeiten der Service
+cpntaoner deülpyen logs einsehen, metirken cpu auslast monitoren
+
+Aktuell ist das Observability begrenzt, da es zurzeit nur durch die Nutzung von Docker-Container für das Software Deployment stattfindete. Die Nutzung von Container bringt die Möglichkeit Logs einzusehen. Außerdem werden Metriken wie CPU Auslast aufgezeichnet, die für das Monitoring behilflich sind.
+Zukünftig soll aber ein weiter aufbereitetes Observability möglich sein mit der Hilfe von verschiedenen Tools.
+Im folgenden werden diese näher beschrieben:
+
+Prometheus ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metriken zur Weiterverarbeitung zu sammeln.
+Das System wird verwendet um die Verfügbarkeit und Leistung von Anwendungen und Diensten im laufenden Betrieb zu überwachen. Es sammelt Daten aus verschiedenen Quellen und stellt sie in einem leicht zugänglichen Format bereit, damit Entwickler die Leistung ihrer Systeme im Auge behalten und eventuelle Probleme schnell identifizieren und beheben zu können.
+
+-----
+Jaeger ist wie Prometheus ein Open-Source-System, zuständig für das tracen. Es wird  vorallem fürs monitoring und troubleshooten von systemen verwendet
+Funktionen die es beinhaltet sind Tracing, um die Leistung von Anwendungen zu verfolgen und zu verstehen, wie sie auf Anfragen reagieren, sowie Metriken und Alerting, um die  Leistung von Anwendungenzu überwachen. 
+
+Die Auswahl des Tools für Tracing fiel auf Jaeger da es Open Source und kostenlos ist, was es für unser Projektumfang attraktiv macht.
+Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vorallem durch eine umfassende Dokumentation und Ressourcen.
+
+Jaeger unterstützt verschiedene Tracing-Protokolle, wie z.B. OpenTracing, OpenCensus und Zipkin, was es Entwicklern ermöglicht, die für sie geeignetste Lösung zu wählen und sie leicht in ihre Anwendungen zu integrieren.
+
+Zudem bietet dieses Tool eine benutzerfreundliche Benutzeroberfläche, die es ermöglicht, Traces in Echtzeit zu visualisieren und zu analysieren, um eventuelle Probleme schnell zu identifizieren und beheben zu können.
+
+-----
+
+Logstash ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln, zu verarbeiten und in einem Format bereitzustellen, welches die Weiternutzung vereinfacht. Es kann verwendet werden, um Logs von verschiedenen Quellen zu sammeln und in einem zentralen Repository zu speichern, sodass Entwickler leicht auf die Log-Daten zugreifen und sie verwenden können.
+
+
 
 ### Weitere Diagramme
 *Zustandsdiagramm: Benutzer*
