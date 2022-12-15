@@ -6,3 +6,5 @@ secrets/
 *.pyc
 *.env
 .idea/
+flutter/ios/
+flutter/macos/
