@@ -94,7 +94,7 @@ Eine mögliche Architektur für ein Projekt könnte den Einsatz von Flutter für
 
 Flutter ist ein beliebtes Open-Source-Mobile-Application-Development-Framework von Google. Es ermöglicht Entwicklern, native kompilierte Anwendungen für Mobilgeräte, Web und Desktop aus einem Codebasis zu erstellen. Flutter ist bekannt für seinen schnellen Entwicklungszyklus und seine Fähigkeit, schöne und expressive Benutzeroberflächen zu erstellen.
 
-Flask ist ein Microweb-Framework für Python, das eine einfache Möglichkeit bietet um Webanwendungen zu erstellen. Es ist bekannt für seine Einfachheit und seine Flexibilität, wodurch es eine gute Wahl für das schnelle Entwickeln von Prototypen und die Erstellung kleiner bis mittelgroßer Webanwendungen ist. Flask verfügt desweiteren über eine große und aktive Community, mit vielen Bibliotheken und Plugins von Drittanbietern, die seine Fähigkeiten erweitern. Es wird verwendet, um eine API zu erstellen, die die Datenbank abfragt und die Daten an die App sendet, in der diese dann angezeigt werden. 
+Flask ist ein Microweb-Framework für Python, das eine einfache Möglichkeit bietet um Webanwendungen zu erstellen. Es ist bekannt für seine Einfachheit und seine Flexibilität, wodurch es eine gute Wahl für das schnelle Entwickeln von Prototypen und die Erstellung kleiner bis mittelgroßer Webanwendungen ist. Flask verfügt des weiteren über eine große und aktive Community, mit vielen Bibliotheken und Plugins von Drittanbietern, die seine Fähigkeiten erweitern. Es wird verwendet, um eine API zu erstellen, die die Datenbank abfragt und die Daten an die App sendet, in der diese dann angezeigt werden. 
 
 MariaDB ist ein Fork des beliebten Datenbank-Management-Systems MySQL. Es ist bekannt für seine Kompatibilität mit MySQL sowie für seine Leistung und Zuverlässigkeit. MariaDB bietet eine Vielzahl von Funktionen und Werkzeugen zur Verwaltung und Abfrage von Daten und ist daher für viele Anwendungen geeignet.
 
@@ -137,7 +137,7 @@ definiert. Diese sind:
 Benutzer
 Datenbank
 API-Verbindung
-Websiten-Host
+Webseiten-Host
 Google API-Verbindung
 
 3. Voraussetzungen
@@ -177,7 +177,7 @@ Verbindung zum Internet steht, damit verbunden auch:
 Grundlegender Ablauf der Ereignisse
 
 #### Usecase 3
-1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände der Einaufsliste hinzuzufügen.
+1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände der Einkaufsliste hinzuzufügen.
 2. Aktoren
   - Nutzer
   - Datenbank
@@ -194,7 +194,7 @@ Grundlegender Ablauf der Ereignisse
   
 
 #### Usecase 4
-1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände aus der Einaufsliste zu entfernen.
+1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände aus der Einkaufsliste zu entfernen.
 2. Aktoren
   - Nutzer
   - Datenbank
@@ -207,7 +207,7 @@ Grundlegender Ablauf der Ereignisse
   - Einkaufsliste des Nutzers wird über die API aus der Datenbank geholt
   - Löschen eines Gegenstands vom Nutzer über das UI
   - API Call 
-  - enfernen des Gegenstands aus der Einkaufsliste des korrekten Nutzers in der Datenbank
+  - entfernen des Gegenstands aus der Einkaufsliste des korrekten Nutzers in der Datenbank
 
 
 #### Usecase 5
@@ -216,7 +216,7 @@ Grundlegender Ablauf der Ereignisse
   - Nutzer
   - Google OAuth
   - public API
-3. Vorraussetzungen:
+3. Voraussetzungen:
   - Aktive Internetverbindung des Nutzers
   - Webseite muss erreichbar sein
   - Google OAuth muss erreichbar sein
@@ -235,7 +235,7 @@ Grundlegender Ablauf der Ereignisse
   - Nutzer
   - Google OAuth
   - public API
-3. Vorraussetzungen:
+3. Voraussetzungen:
   - Aktive Internetverbindung des Nutzers
   - Webseite muss erreichbar sein
   - Nutzer muss angemeldet sein (siehe Usecase 5)
@@ -257,7 +257,7 @@ Grundlegender Ablauf der Ereignisse
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
 
-Die genutzen Container-Technologien ermöglichen ein einfaches Skalieren von UI und API. 
+Die genutzten Container-Technologien ermöglichen ein einfaches Skalieren von UI und API. 
 
 MariaDB ist eine Open-Source-Datenbank, die skalierbar ist, indem sie die Verwendung von Clustering und Replikation ermöglicht, um die Leistung und Verfügbarkeit zu verbessern. Dies bedeutet, dass MariaDB in der Lage ist, Daten auf mehreren Servern zu speichern und zu verarbeiten, um die Belastung zu verteilen und die Leistung zu erhöhen.
 
@@ -267,10 +267,10 @@ Flutter ist ein Open-Source-Framework für die Entwicklung von mobilen Anwendung
 
 Insgesamt sind MariaDB, Flask und Flutter in der Lage, in einem Container skaliert zu werden, indem verschiedene Techniken und Funktionen verwendet werden, um die Leistung und Verfügbarkeit zu verbessern. Die genauen Details und Möglichkeiten hängen jedoch von der spezifischen Implementierung und den Anforderungen der Anwendung ab.
 
-Um registrierten Nutzern eine Datensichherheit zu bieten wird HTTPS für für Basis-Verschlüsselung zwischen Client und Server (UI und API) genutzt.
+Um registrierten Nutzern eine Datensicherheit zu bieten wird HTTPS für für Basis-Verschlüsselung zwischen Client und Server (UI und API) genutzt.
 Um weitere (Web-)Schwachstellen abzudecken, soll sich an der OWASP Top 10 als Katalog orientiert.
   
-Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichkeit. Diese soll durch eine intuitive, einfache und übersichtliche UI umgesetzt werden. Daraus resultierend soll auch der Funktionsumfang auf das minimale beschränlkt werden.
+Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichkeit. Diese soll durch eine intuitive, einfache und übersichtliche UI umgesetzt werden. Daraus resultierend soll auch der Funktionsumfang auf das minimale beschränkt werden.
 
 Ausfallsicherheit und Redundanz ist über Backups sowie Notfall-Instanzen der Datenbank abzudecken, falls die Haupt Instanz ausfallen sollte. 
 
@@ -309,11 +309,11 @@ graph TB
 Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). 
 Dabei ist a*b die Skalarprodukt von a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
 
-Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
-Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
+Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weiteren Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
+Anschließend kann die Cosine Similarity zwischen allen Rezepten und der Such-Eingabe berechnet werden. Desto geringer der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
 Für die Berechnung der Cosinus-Ähnlichkeit wird die Funktion cosine_similarity aus dem sklearn.metrics.pairwise Modul verwendet. 
 
-Desweiteren ist geplant den Datensatz noch zu erweitern und weitere Rezepte zu scrapen. Dies würde erfodern, dass das Model neu trainiert wird. Die erweitere API würde dann auch als Microservice für alle Funktionalitäten dienen. 
+Des weiteren ist geplant den Datensatz noch zu erweitern und weitere Rezepte zu scrapen. Dies würde erfordern, dass das Model neu trainiert wird. Die erweitere API würde dann auch als Microservice für alle Funktionalitäten dienen. 
 
 ### Observability
 *Logging, Monitoring, Tracing*
@@ -326,11 +326,11 @@ Prometheus ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metr
 Das System wird verwendet um die Verfügbarkeit und Leistung von Anwendungen und Diensten im laufenden Betrieb zu überwachen. Es sammelt Daten aus verschiedenen Quellen und stellt sie in einem leicht zugänglichen Format bereit, damit Entwickler die Leistung ihrer Systeme im Auge behalten und eventuelle Probleme schnell identifizieren und beheben zu können.
 
 -----
-Jaeger ist wie Prometheus ein Open-Source-System, zuständig für das tracen. Es wird  vorallem fürs monitoring und troubleshooten von systemen verwendet
-Funktionen die es beinhaltet sind Tracing, um die Leistung von Anwendungen zu verfolgen und zu verstehen, wie sie auf Anfragen reagieren, sowie Metriken und Alerting, um die  Leistung von Anwendungenzu überwachen. 
+Jaeger ist wie Prometheus ein Open-Source-System, zuständig für das tracen. Es wird  vor allem fürs monitoring und troubleshooten von Systemen verwendet
+Funktionen die es beinhaltet sind Tracing, um die Leistung von Anwendungen zu verfolgen und zu verstehen, wie sie auf Anfragen reagieren, sowie Metriken und Alerting, um die  Leistung von Anwendungen zu überwachen. 
 
 Die Auswahl des Tools für Tracing fiel auf Jaeger da es Open Source und kostenlos ist, was es für unser Projektumfang attraktiv macht.
-Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vorallem durch eine umfassende Dokumentation und Ressourcen.
+Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vor allem durch eine umfassende Dokumentation und Ressourcen.
 
 Jaeger unterstützt verschiedene Tracing-Protokolle, wie z.B. OpenTracing, OpenCensus und Zipkin, was es Entwicklern ermöglicht, die für sie geeignetste Lösung zu wählen und sie leicht in ihre Anwendungen zu integrieren.
 
@@ -347,7 +347,7 @@ Logstash ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln,
 *Sequenzdiagramm: Benutzer löschen ,System-Konsistenz*
 ![Aktivitätsdiagramm](ActivityDiagramUser.drawio.png)
 
-Zur  Erhaltung der Konsistenz bei der Entfernung eines Benutzers werden Datenbank Einträge gelöscht. Dabei sind Komponenten wie die Einkaufsliste oder Bewertungen von der Enfernung des Users betroffen. Da die Einkaufsliste nicht zwischne Usern geteilt wird, bleibt bei der Löschung dieser die Konsistenz erhalten. Bei  Bewertungen werden Ersteller durch "Entfernter Benutzer" ersetzt um eine sauber Trennung zu ermöglichen.
+Zur  Erhaltung der Konsistenz bei der Entfernung eines Benutzers werden Datenbank Einträge gelöscht. Dabei sind Komponenten wie die Einkaufsliste oder Bewertungen von der Entfernung des Users betroffen. Da die Einkaufsliste nicht zwischen Usern geteilt wird, bleibt bei der Löschung dieser die Konsistenz erhalten. Bei  Bewertungen werden Ersteller durch "Entfernter Benutzer" ersetzt um eine sauber Trennung zu ermöglichen.
 ## Deployment und Operations
 ---
 
