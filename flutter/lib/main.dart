@@ -1,3 +1,4 @@
+import 'package:captain_cook/widgets/selected_ingredients.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
@@ -153,25 +154,9 @@ class _MainAppState extends State<MainApp> {
                                           padding: const EdgeInsets.all(20.0),
                                           child: Column(children: [
                                             const AutoCompleteIngredients(),
-                                            ListView(
-                                              shrinkWrap: true,
-                                              children: [
-                                                for (final ingredient
-                                                    in value.selected)
-                                                  ListTile(
-                                                    title: Text(ingredient),
-                                                    trailing: IconButton(
-                                                      icon: const Icon(
-                                                          Icons.delete),
-                                                      onPressed: () {
-                                                        value.deselect(
-                                                            ingredient);
-                                                        ;
-                                                      },
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
+                                            const SelectedIngredients(
+                                              dismissable: true,
+                                            )
                                           ]
                                               //  Text(value.selected
                                               //     .map((e) => e)
@@ -202,19 +187,6 @@ class _MainAppState extends State<MainApp> {
           const GoogleAuthStatus(),
         ],
       ),
-
-      // floatingActionButton:
-      //     Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-      //   FloatingActionButton(
-      //     onPressed: _openIngredientSelector,
-      //     tooltip: 'Select ingredients',
-      //     heroTag: "ingredient_selector_open",
-      //     isExtended: true,
-      //     child: const Icon(Icons.check_box),
-      //   ), // This trailing comma makes auto-formatting nicer for build methods.
-      // const SizedBox(
-      //   height: 10,
-      // ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [

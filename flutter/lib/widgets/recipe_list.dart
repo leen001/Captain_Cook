@@ -1,8 +1,9 @@
 import 'package:captain_cook/states.dart';
 import 'package:flutter/material.dart';
 import 'package:captain_cook/api.dart';
-import 'package:captain_cook/main.dart';
 import 'package:provider/provider.dart';
+
+import 'selected_ingredients.dart';
 
 class RecipeList extends StatefulWidget {
   const RecipeList({Key? key, required this.selectedIngredients})
@@ -15,45 +16,25 @@ class RecipeList extends StatefulWidget {
 }
 
 class _RecipeListState extends State<RecipeList> {
-  List<String> ingredients = [];
-  List<RecipeList> list_recipes = [];
+  List<RecipeListItem> _recipeListItems = <RecipeListItem>[];
+  bool _loading = false;
 
-  // void _openIngredientSelector() {
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(
-  //         builder: (context) => IngredientSelector(
-  //               addIngredient: _addIngredient,
-  //               removeIngredient: _removeIngredient,
-  //             )),
-  //   );
-  // }
-  // void _openshoppinglist() {
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(
-  //         builder: (context) => ShoppingList(
-  //               ingredients: ingredients,
-  //             )),
-  //   );
-  // }
-  // void _incrementCounter() {
-  //   setState(() {
-  //     _counter++;
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _loading = true;
+    _getRecipes(context).then((_) {
+      // setState(() {
+      //   _recipeListItems[0].expanded = true;
+      // });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              _navigateToSearch(context);
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -63,49 +44,210 @@ class _RecipeListState extends State<RecipeList> {
               shrinkWrap: true,
               children: [
                 Container(
-                  // height: 100,
-                  // width: 100,
                   padding: const EdgeInsets.all(10),
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: SingleChildScrollView(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FutureBuilder<List<Recipe>>(
-                                future: _getRecipes(context),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return Expanded(
-                                      child: Column(
-                                        children:
-                                            _buildRecipeWidgets(snapshot.data!),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: SingleChildScrollView(
+                      child: Column(children: [
+                        const SelectedIngredients(
+                          dismissable: true,
+                        ),
+                        const SizedBox(height: 10),
+                        Builder(builder: (context) {
+                          if (_loading) {
+                            return const LinearProgressIndicator();
+                          } else {
+                            return ExpansionPanelList(
+                              expansionCallback: (int index, bool isExpanded) {
+                                setState(() {
+                                  _recipeListItems[index].expanded =
+                                      !isExpanded;
+                                });
+                              },
+                              children: _recipeListItems.map((item) {
+                                return ExpansionPanel(
+                                  headerBuilder:
+                                      (BuildContext context, bool isExpanded) {
+                                    return ListTile(
+                                      title: Text(
+                                        item.recipe.recipe,
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            height: 3,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     );
-                                  } else if (snapshot.hasError) {
-                                    return Text("${snapshot.error}");
-                                  }
-                                  return Column(
-                                    children: const [
-                                      Padding(
-                                        padding: EdgeInsets.all(60.0),
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    ],
-                                  ); //const LinearProgressIndicator();
-
-                                  // return Column(
-                                  //   children: _buildRecipeWidgets(snapshot.data!),
-                                  // );
-                                },
-                              ),
-                            ]),
-                      ),
+                                  },
+                                  body: Padding(
+                                    padding: const EdgeInsets.all(14.0),
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          20, 0, 40, 20),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          // Text(
+                                          //   item.recipe.recipe,
+                                          //   style: const TextStyle(
+                                          //       fontSize: 30,
+                                          //       height: 3,
+                                          //       fontWeight: FontWeight.bold),
+                                          // ),
+                                          // const Icon(
+                                          //   Icons.done_rounded,
+                                          //   color: Colors.green,
+                                          //   size: 30,
+                                          // ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 0, 10, 40),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: <Widget>[
+                                                Flexible(
+                                                  flex: 2,
+                                                  fit: FlexFit.loose,
+                                                  child: ListView(
+                                                    shrinkWrap: true,
+                                                    children: [
+                                                      for (var i = 0;
+                                                          i <
+                                                              item
+                                                                  .recipe
+                                                                  .ingredients
+                                                                  .length;
+                                                          i++)
+                                                        ListTile(
+                                                          title: Text(item
+                                                              .recipe
+                                                              .ingredients[i]),
+                                                          trailing: IconButton(
+                                                            splashRadius: 20,
+                                                            splashColor:
+                                                                Colors.green,
+                                                            focusColor:
+                                                                Colors.green,
+                                                            color: Colors.green,
+                                                            icon: const Icon(Icons
+                                                                .add_circle_outline),
+                                                            onPressed: () {},
+                                                            highlightColor:
+                                                                Colors.green,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const VerticalDivider(
+                                                  color: Colors.black,
+                                                  thickness: 1,
+                                                  indent: 20,
+                                                  endIndent: 20,
+                                                ),
+                                                Flexible(
+                                                  flex: 5,
+                                                  fit: FlexFit.loose,
+                                                  child:
+                                                      //Text(recipe.r_direction),
+                                                      ListView(
+                                                    shrinkWrap: true,
+                                                    children: [
+                                                      for (var i = 0;
+                                                          i <
+                                                              item
+                                                                  .recipe
+                                                                  .r_direction
+                                                                  .length;
+                                                          i++)
+                                                        ListTile(
+                                                          title: Text(item
+                                                              .recipe
+                                                              .r_direction[i]),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                20, 0, 20, 20),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: <Widget>[
+                                                Flexible(
+                                                  flex: 2,
+                                                  fit: FlexFit.loose,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      for (var i = 0;
+                                                          i <
+                                                              item
+                                                                  .recipe
+                                                                  .r_nutrition_info
+                                                                  .length;
+                                                          i++)
+                                                        Flexible(
+                                                            child: Text(item
+                                                                    .recipe
+                                                                    .r_nutrition_info[
+                                                                i])),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                20, 0, 20, 0),
+                                            child: Row(
+                                              children: <Widget>[
+                                                Flexible(
+                                                  flex: 2,
+                                                  fit: FlexFit.loose,
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Text(
+                                                        "Cooking Time ${item.recipe.cooking_time}",
+                                                      ),
+                                                      Text(
+                                                          "Total Time ${item.recipe.total_time}"),
+                                                      Text(
+                                                          "Recipe Servings ${item.recipe.recipe_servings}"),
+                                                      //Text("Recipe yield ${recipe.recipe_yield}")
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  isExpanded: item.expanded,
+                                );
+                              }).toList(),
+                            );
+                          }
+                        }),
+                      ]),
                     ),
                   ),
                 ),
@@ -114,182 +256,30 @@ class _RecipeListState extends State<RecipeList> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _navigateToSearch(context);
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.list_alt),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
-  void _navigateToSearch(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const MainApp()),
-    );
-  }
-
-  Future<List<Recipe>> _getRecipes(BuildContext context) async {
+  Future<void> _getRecipes(BuildContext context) async {
     try {
       final recipes = await CCApi().getRecipes(
           Provider.of<AvailableIngredients>(context, listen: false).selected);
-      return recipes;
+      setState(() {
+        _loading = false;
+        _recipeListItems =
+            recipes.map((recipe) => RecipeListItem(recipe: recipe)).toList();
+      });
     } catch (e) {
       print(e);
-      return [];
+      setState(() {
+        _loading = false;
+      });
     }
   }
+}
 
-  List<Widget> _buildRecipeWidgets(List<Recipe> recipes) {
-    List<Widget> recipeWidgets = [];
+class RecipeListItem {
+  Recipe recipe;
+  bool expanded;
 
-    for (final recipe in recipes) {
-      //print("recipe ${recipe.uid}");
-      recipeWidgets.add(
-        Card(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 40, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      recipe.recipe,
-                      style: const TextStyle(
-                          fontSize: 30, height: 3, fontWeight: FontWeight.bold),
-                    ),
-                    const Icon(
-                      Icons.done_rounded,
-                      color: Colors.green,
-                      size: 30,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(0, 0, 10, 40),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Flexible(
-                            flex: 2,
-                            fit: FlexFit.loose,
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: [
-                                for (var i = 0;
-                                    i < recipe.ingredients.length;
-                                    i++)
-                                  ListTile(
-                                    title: Text(recipe.ingredients[i]),
-                                    trailing: IconButton(
-                                      splashRadius: 20,
-                                      splashColor: Colors.green,
-                                      focusColor: Colors.green,
-                                      color: Colors.green,
-                                      icon:
-                                          const Icon(Icons.add_circle_outline),
-                                      onPressed: //Shoppinglist(checked: null,),
-                                          () {},
-                                      highlightColor: Colors.green,
-
-                                      // setState(() {
-                                      //   if (_favIconColor == Colors.grey) {
-                                      //     //_openSettings;
-                                      //     _favIconColor = Colors.red;
-                                      //   } else {
-                                      //     _favIconColor = Colors.grey;
-                                      //   }
-                                      //   //HERE get the add ingredient Selector plus pop up
-                                      // });
-                                      // }
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const VerticalDivider(
-                            color: Colors.black,
-                            thickness: 1,
-                            indent: 20,
-                            endIndent: 20,
-                          ),
-                          Flexible(
-                            flex: 5,
-                            fit: FlexFit.loose,
-                            child:
-                                //Text(recipe.r_direction),
-                                ListView(
-                              shrinkWrap: true,
-                              children: [
-                                for (var i = 0;
-                                    i < recipe.r_direction.length;
-                                    i++)
-                                  ListTile(
-                                    title: Text(recipe.r_direction[i]),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Flexible(
-                            flex: 2,
-                            fit: FlexFit.loose,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                for (var i = 0;
-                                    i < recipe.r_nutrition_info.length;
-                                    i++)
-                                  Flexible(
-                                      child: Text(recipe.r_nutrition_info[i])),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      child: Row(
-                        children: <Widget>[
-                          Flexible(
-                            flex: 2,
-                            fit: FlexFit.loose,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Cooking Time ${recipe.cooking_time}",
-                                ),
-                                Text("Total Time ${recipe.total_time}"),
-                                Text(
-                                    "Recipe Servings ${recipe.recipe_servings}"),
-                                //Text("Recipe yield ${recipe.recipe_yield}")
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return recipeWidgets;
-  }
+  RecipeListItem({required this.recipe, this.expanded = false});
 }
