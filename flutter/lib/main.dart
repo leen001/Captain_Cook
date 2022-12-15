@@ -140,67 +140,70 @@ class _MainAppState extends State<MainApp> {
                   Card(
                     elevation: 10,
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Consumer<AvailableIngredients>(
-                        builder: (context, availableIngredients, child) =>
-                            Center(
-                          // child: Text((availableIngredients.length > 0)
-                          //     ? availableIngredients.all
-                          //         .map((e) => e.id)
-                          //         .toList()
-                          //         .toString()
-                          //     : "Please select your ingredients")
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 16),
-                            child: Column(
-                              children: <Widget>[
-                                Consumer<AvailableIngredients>(
-                                  builder: (context, value, child) => Row(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 16),
+                      child: Column(
+                        children: <Widget>[
+                          Consumer<AvailableIngredients>(
+                              builder: (context, value, child) => Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      SizedBox(
-                                        child: Text(value.selected
-                                            .map((e) => e)
-                                            .toList()
-                                            .toString()),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20.0),
+                                          child: Column(children: [
+                                            const AutoCompleteIngredients(),
+                                            ListView(
+                                              shrinkWrap: true,
+                                              children: [
+                                                for (final ingredient
+                                                    in value.selected)
+                                                  ListTile(
+                                                    title: Text(ingredient),
+                                                    trailing: IconButton(
+                                                      icon: const Icon(
+                                                          Icons.delete),
+                                                      onPressed: () {
+                                                        value.deselect(
+                                                            ingredient);
+                                                        ;
+                                                      },
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ]
+                                              //  Text(value.selected
+                                              //     .map((e) => e)
+                                              //     .toList()
+                                              //     .toString()),
+                                              ),
+                                        ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                                const AutoCompleteIngredients(),
-                                IconButton(
-                                    onPressed: () {
-                                      _openRecipeOutput();
-                                    },
-                                    icon: const Icon(Icons.search),
-                                    color: Colors.indigo),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                              ],
-
-                              ///HERE
-                              //     TextFormField(
-                              //   decoration: const InputDecoration(
-                              //     border: UnderlineInputBorder(),
-                              //     labelText: 'Search Recipe',
-                              //   ),
-                              // ),
-                            ),
+                                  )),
+                          IconButton(
+                              onPressed: () {
+                                _openRecipeOutput();
+                              },
+                              icon: const Icon(Icons.search),
+                              color: Colors.indigo),
+                          const SizedBox(
+                            height: 20,
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
-                  const GoogleAuthStatus(),
                 ],
               ),
             ),
           ),
+          const GoogleAuthStatus(),
         ],
       ),
+
       // floatingActionButton:
       //     Column(mainAxisAlignment: MainAxisAlignment.end, children: [
       //   FloatingActionButton(

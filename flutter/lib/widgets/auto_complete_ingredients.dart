@@ -14,6 +14,8 @@ class AutoCompleteIngredients extends StatefulWidget {
 
 class _AutoCompleteIngredientsState extends State<AutoCompleteIngredients> {
   String _displayStringForOption(String option) => option;
+  String shownInput = '';
+  late TextEditingController textEditingController;
 
   @override
   Widget build(BuildContext context) {
@@ -31,29 +33,48 @@ class _AutoCompleteIngredientsState extends State<AutoCompleteIngredients> {
             return option.contains(textEditingValue.text.toLowerCase());
           });
         }
-        // if (AvailableIngredients.contains( option)) {
-        //   return option.contains(textEditingValue.text.toLowerCase());
-        // }
-        // return AvailableIngredients.contains((String option) {
-        //   return option.contains(textEditingValue.text.toLowerCase());
-        // },);
       },
       onSelected: (String selection) {
         // Consumer<SelectedIng>(
         //   builder: (context, selectedIng, child) => selectedIng.add(selection),
         // );
         ingredients.select(selection);
+        textEditingController.text = "";
 
         //Navigator.pop(context, selection);
-        return;
+        // return _returnToStart(selection);
+      },
+      fieldViewBuilder: (BuildContext context,
+          TextEditingController fieldTextEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted) {
+        textEditingController = fieldTextEditingController;
+        return TextField(
+          controller: fieldTextEditingController,
+          focusNode: focusNode,
+          decoration: const InputDecoration(
+            labelText: 'Ingredient',
+            hintText: 'Enter an ingredient',
+          ),
+          onSubmitted: (String value) {
+            value = '';
+            onFieldSubmitted();
+          },
+        );
       },
     );
   }
 
-  void _returnToStart(String selectedIngredient) {
-    //remove the text in input field
-    //AvailableIngredients.remove(selectedIngredient);
-  }
+  // void _returnToStart(String selectedIngredient) {
+  //   ingredients.text = '';
+  //   //remove the text in input field
+  //   //AvailableIngredients.remove(selectedIngredient);
+  // }
+  // void _returnToStart(String selectedIngredient) {
+  //   textEditingController.text =
+  //   //remove the text in input field
+  //   //AvailableIngredients.remove(selectedIngredient);
+  // }
 
 //   void _startRecipeOutput() {
 //     Navigator.push(

@@ -74,45 +74,37 @@ class _RecipeListState extends State<RecipeList> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
                       child: SingleChildScrollView(
-                        child: Row(children: [
-                          FutureBuilder<List<Recipe>>(
-                            future: _getRecipes(context),
-                            builder: (context, snapshot) {
-                              // if (snapshot.hasData) {
-                              //   final children = <Widget>[];
-                              //   for (var i = 0; i < list.length; i++) {
-                              //     children.add(ListTile(
-                              //       title: Text(list[i]),
-                              //     ));
-                              //   }
-                              //   return ListView(
-                              //     shrinkWrap: true,
-                              //     children: children,
-                              //   );
-                              // } else if (snapshot.hasError) {
-                              //   return Text("${snapshot.error}");
-                              // }
-                              // return const LinearProgressIndicator();
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FutureBuilder<List<Recipe>>(
+                                future: _getRecipes(context),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Expanded(
+                                      child: Column(
+                                        children:
+                                            _buildRecipeWidgets(snapshot.data!),
+                                      ),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text("${snapshot.error}");
+                                  }
+                                  return Column(
+                                    children: const [
+                                      Padding(
+                                        padding: EdgeInsets.all(60.0),
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    ],
+                                  ); //const LinearProgressIndicator();
 
-                              if (snapshot.hasData) {
-                                return Expanded(
-                                  child: Column(
-                                    children:
-                                        _buildRecipeWidgets(snapshot.data!),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Text("${snapshot.error}");
-                              }
-                              return const Icon(Icons
-                                  .circle); //const LinearProgressIndicator();
-
-                              // return Column(
-                              //   children: _buildRecipeWidgets(snapshot.data!),
-                              // );
-                            },
-                          ),
-                        ]),
+                                  // return Column(
+                                  //   children: _buildRecipeWidgets(snapshot.data!),
+                                  // );
+                                },
+                              ),
+                            ]),
                       ),
                     ),
                   ),
@@ -198,7 +190,8 @@ class _RecipeListState extends State<RecipeList> {
                                       color: Colors.green,
                                       icon:
                                           const Icon(Icons.add_circle_outline),
-                                      onPressed: () {},
+                                      onPressed: //Shoppinglist(checked: null,),
+                                          () {},
                                       highlightColor: Colors.green,
 
                                       // setState(() {
@@ -257,7 +250,8 @@ class _RecipeListState extends State<RecipeList> {
                                 for (var i = 0;
                                     i < recipe.r_nutrition_info.length;
                                     i++)
-                                  Text(recipe.r_nutrition_info[i]),
+                                  Flexible(
+                                      child: Text(recipe.r_nutrition_info[i])),
                               ],
                             ),
                           ),
@@ -296,7 +290,6 @@ class _RecipeListState extends State<RecipeList> {
         ),
       );
     }
-    print("widget length ${recipeWidgets.length}");
     return recipeWidgets;
   }
 }
