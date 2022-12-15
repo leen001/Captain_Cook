@@ -5,24 +5,27 @@ Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurl
 ---
 
 # Inhaltsverzeichnis
-- [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
-- [Motivation](#motivation)
-  - [Akteure](#akteure)
-- [Architektur](#architektur)
-  - [Komponentendiagramm](#komponentendiagramm)
-  - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
-  - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
-  - [Architektur-Entscheidungen](#architektur-entscheidungen)
-  - [Funktionale Anforderungen](#funktionale-anforderungen)
-  - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
-  - [Domain-Driven-Design](#domain-driven-design)
-  - [Observability](#observability)
-  - [Weitere Diagramme](#weitere-diagramme)
-- [Deployment und Operations](#deployment-und-operations)
-  - [Deployment](#deployment)
-    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
-  - [Operations](#operations)
-  - [Statischer Code-Report](#statischer-code-report)
+- [Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*](#koch-mit-deinem-kühlschrank---rezepte-für-deine-reste-captain-cook)
+  - [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
+- [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Motivation](#motivation)
+    - [Akteure](#akteure)
+  - [Architektur](#architektur)
+    - [Komponentendiagramm](#komponentendiagramm)
+    - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
+    - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
+    - [Architektur-Entscheidungen](#architektur-entscheidungen)
+    - [Funktionale Anforderungen](#funktionale-anforderungen)
+    - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
+    - [Domain-Driven-Design](#domain-driven-design)
+      - [API](#api)
+    - [Observability](#observability)
+    - [Weitere Diagramme](#weitere-diagramme)
+  - [Deployment und Operations](#deployment-und-operations)
+    - [Deployment](#deployment)
+      - [Build \& Deployment Pipeline](#build--deployment-pipeline)
+    - [Operations](#operations)
+    - [Statischer Code-Report](#statischer-code-report)
 
 
 ## Motivation
@@ -97,7 +100,8 @@ MariaDB ist ein Fork des beliebten Datenbank-Management-Systems MySQL. Es ist be
 Zusammen bieten diese Technologien eine leistungsstarke und flexible Architektur für unser Projekt. Flutter kann verwendet werden, um benutzerfreundliche und ansprechende Interfaces zu erstellen. Flask bietet einen einfachen und skalierbaren Back-End und MariaDB kann als zuverlässige und leistungsstarke Datenbank dienen.
 
 ### Funktionale Anforderungen
-*Use-Cases/User-Stories*
+*Use-Cases*
+
 Für die funktionalen Anforderungen wurden vier Use-Cases 
 definiert. Diese sind:
 - Die Anwendung muss es Benutzern ermöglichen, Rezepte abzufragen.
@@ -105,6 +109,15 @@ definiert. Diese sind:
 - Die Anwendung muss es Benutzern ermöglichen, eine Einkaufsliste zu benutzen/bearbeiten.
 - Die Anwendung muss es Benutzern ermöglichen, sich an- und abzumelden.
 
+*User Stories*
+
+- Als User möchte ich mithilfe der Anwendung Rezeptvorschläge abfragen und somit die Lebensmittelverschwendung verringern, indem ich zu Hause verbliebenen Resten wiederverwerte.
+
+- Als User möchte ich Rezepte bewerten, um meine Meinung zum Rezept zu äußern aber auch Verbesserungsvorschläge für andere Nutzer zu hinterlassen. Dadurch möchte ich auch einen Austausch mit anderen Nutzern der Anwendung haben und ermöglichen.
+
+- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld spare und die Lebensmittelverschwendung vorbeugen kann.
+
+- Als User möchte ich  die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Hinzufügen von Bewertungegn und Erstellung einer Einkaufsliste zu nutzen.
 
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
@@ -132,13 +145,44 @@ Ausfallsicherheit und Redundanz ist über Backups sowie Notfall-Instanzen der Da
 *EDA (Event-Driven-Architecture), SOA (Service-Oriented-Architecture)*
 ![Domain-Driven-Design](domain-driven.drawio.png)
 
+Wie veranschaulicht besteht das Domain Driven Design aus 3 Domains: Rezept-Daten, Einkaufsliste und Such-Domäne(Such-Ausgabe). Das Modell für die Rezept-Daten ist in der Datei recipe.py zu finden. In der Datei shopping_list.py ist das Modell für die Einkaufsliste zu finden und die Datei recommendation_system.py enthält das Modell für die Such-Ausgabe.
+
+ 
+ #### API
+Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). Dabei ist a*b die Skalarprodukt von  a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
+
+Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
+Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
+Für die Berechnung der Cosinus-Ähnlichkeit wird die Funktion cosine_similarity aus dem sklearn.metrics.pairwise Modul verwendet. 
+
+
 ### Observability
 *Logging, Monitoring, Tracing*
-Das Logging wird mithilfe von Docker Compose realisiert. Dabei werden logs von  den einzelnen services gesammelt.
-Prometheus ist ein Open-source Tool das zum
-Jaeger
-logstash
-Beobachtet werden sollen zusätzlich die Antwortzeiten der Service
+cpntaoner deülpyen logs einsehen, metirken cpu auslast monitoren
+
+Aktuell ist das Observability begrenzt, da es zurzeit nur durch die Nutzung von Docker-Container für das Software Deployment stattfindet. Die Möglichkeit, Logs anzuzeigen, wird durch die Verwendung von Containern bereitgestellt. Darüber hinaus werden für die Überwachung nützliche Metriken wie die CPU-Auslastung aufgezeichnet.
+Zukünftig soll aber  Observability in größerem Maßstab mit Hilfe verschiedener Tools möglich sein.
+Im folgenden werden diese näher beschrieben:
+
+Prometheus ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metriken zur Weiterverarbeitung zu sammeln.
+Das System wird verwendet um die Verfügbarkeit und Leistung von Anwendungen und Diensten im laufenden Betrieb zu überwachen. Es sammelt Daten aus verschiedenen Quellen und stellt sie in einem leicht zugänglichen Format bereit, damit Entwickler die Leistung ihrer Systeme im Auge behalten und eventuelle Probleme schnell identifizieren und beheben zu können.
+
+-----
+Jaeger ist wie Prometheus ein Open-Source-System, zuständig für das tracen. Es wird  vorallem fürs monitoring und troubleshooten von systemen verwendet
+Funktionen die es beinhaltet sind Tracing, um die Leistung von Anwendungen zu verfolgen und zu verstehen, wie sie auf Anfragen reagieren, sowie Metriken und Alerting, um die  Leistung von Anwendungenzu überwachen. 
+
+Die Auswahl des Tools für Tracing fiel auf Jaeger da es Open Source und kostenlos ist, was es für unser Projektumfang attraktiv macht.
+Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vorallem durch eine umfassende Dokumentation und Ressourcen.
+
+Jaeger unterstützt verschiedene Tracing-Protokolle, wie z.B. OpenTracing, OpenCensus und Zipkin, was es Entwicklern ermöglicht, die für sie geeignetste Lösung zu wählen und sie leicht in ihre Anwendungen zu integrieren.
+
+Zudem bietet dieses Tool eine benutzerfreundliche Benutzeroberfläche, die es ermöglicht, Traces in Echtzeit zu visualisieren und zu analysieren, um eventuelle Probleme schnell zu identifizieren und beheben zu können.
+
+-----
+
+Logstash ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln, zu verarbeiten und in einem Format bereitzustellen, welches die Weiternutzung vereinfacht. Es kann verwendet werden, um Logs von verschiedenen Quellen zu sammeln und in einem zentralen Repository zu speichern, sodass Entwickler leicht auf die Log-Daten zugreifen und sie verwenden können.
+
+
 
 ### Weitere Diagramme
 *Zustandsdiagramm: Benutzer*
