@@ -5,24 +5,27 @@ Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurl
 ---
 
 # Inhaltsverzeichnis
-- [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
-- [Motivation](#motivation)
-  - [Akteure](#akteure)
-- [Architektur](#architektur)
-  - [Komponentendiagramm](#komponentendiagramm)
-  - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
-  - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
-  - [Architektur-Entscheidungen](#architektur-entscheidungen)
-  - [Funktionale Anforderungen](#funktionale-anforderungen)
-  - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
-  - [Domain-Driven-Design](#domain-driven-design)
-  - [Observability](#observability)
-  - [Weitere Diagramme](#weitere-diagramme)
-- [Deployment und Operations](#deployment-und-operations)
-  - [Deployment](#deployment)
-    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
-  - [Operations](#operations)
-  - [Statischer Code-Report](#statischer-code-report)
+- [Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*](#koch-mit-deinem-kühlschrank---rezepte-für-deine-reste-captain-cook)
+  - [Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini](#gruppenmitglieder-arne-kapell-finn-callies-irina-jörg-akshaya-jeyaraj-gurleen-kaur-saini)
+- [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Motivation](#motivation)
+    - [Akteure](#akteure)
+  - [Architektur](#architektur)
+    - [Komponentendiagramm](#komponentendiagramm)
+    - [Konzept: Externer ID-Provider](#konzept-externer-id-provider)
+    - [Konzept: DB-Zugriff absichern](#konzept-db-zugriff-absichern)
+    - [Architektur-Entscheidungen](#architektur-entscheidungen)
+    - [Funktionale Anforderungen](#funktionale-anforderungen)
+    - [Nicht-funktionale Anforderungen](#nicht-funktionale-anforderungen)
+    - [Domain-Driven-Design](#domain-driven-design)
+      - [API](#api)
+    - [Observability](#observability)
+    - [Weitere Diagramme](#weitere-diagramme)
+  - [Deployment und Operations](#deployment-und-operations)
+    - [Deployment](#deployment)
+      - [Build \& Deployment Pipeline](#build--deployment-pipeline)
+    - [Operations](#operations)
+    - [Statischer Code-Report](#statischer-code-report)
 
 
 ## Motivation
@@ -103,6 +106,17 @@ Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichke
 ### Domain-Driven-Design
 *EDA (Event-Driven-Architecture), SOA (Service-Oriented-Architecture)*
 ![Domain-Driven-Design](domain-driven.drawio.png)
+
+Wie veranschaulicht besteht das Domain Driven Design aus 3 Domains: Rezept-Daten, Einkaufsliste und Such-Ausgabe. Das Modell für die Rezept-Daten ist in der Datei recipe.py zu finden. Das Modell für die Einkaufsliste ist in der Datei shopping_list.py zu finden. Das Modell für die Such-Ausgabe ist in der Datei recommendation_system.py zu finden
+
+ 
+ #### API
+Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). Dabei ist a*b die Skalarprodukt von  a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
+
+Um die Rezepte als Vektor zu repsäentieren, wird jede Zutate eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutate ein Gewicht zugeornet, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zuordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
+Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
+Für die Berechnung der Cosinus-Ähnlichkeit wird die Funktion cosine_similarity aus dem sklearn.metrics.pairwise Modul verwendet. 
+
 
 ### Observability
 *Logging, Monitoring, Tracing*
