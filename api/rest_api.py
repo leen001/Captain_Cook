@@ -251,12 +251,17 @@ docs.register(clear_list)
 @use_kwargs({"rating": fields.Int(), "comment": fields.Str(allow_none=True)})
 @marshal_with(RecipeSchema, code=200)
 @marshal_with(BasicError, code=404, description="Recipe not found")
+@marshal_with(BasicError, code=400, description="Wrong rating input or already rated")
 @authenticated
 def rate_recipe(recipe_id: int, rating: int, comment: str = None):
     recipe = db.query(Recipe).filter_by(id=recipe_id).first()
     if not recipe:
         return ({"error": "Recipe not found"}, 404)
-    rating = recipe.addRating(g.user, rating, comment)
+    if rating < 1 or rating > 5:
+        return ({"error": "Rating must be between 1 and 5"}, 400)
+    if len([rating for rating in recipe.ratings if rating.user_id == g.user.id]) > 0:
+        return ({"error": "You have already rated this recipe"}, 400)
+    rating = recipe.addRating(g.user.id, rating, comment)
     db.add(rating)
     db.commit()
     return (recipe.asSchemaDict(), 200)

@@ -53,7 +53,6 @@ class AvailableIngredients extends ChangeNotifier {
     if (_ingredients.map((i) => i.name).contains(ingredient) &&
         !_selected.contains(ingredient)) {
       _selected.add(ingredient);
-      print('selected: $ingredient');
       notifyListeners();
     }
   }

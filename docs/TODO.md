@@ -10,10 +10,10 @@
   - [ ] Diagramme überarbeiten (**PFEILE**: Verbindungsaufbau?)
   - [ ] ???
 - [ ] Features implementieren (Arne, Irina)
-  - [ ] Zutaten der Liste hinzufügen (vom Rezept)
-  - [ ] Bewertungen
-    - [ ] Erstellen
-    - [ ] Anzeigen
+  - [x] Zutaten der Liste hinzufügen (vom Rezept)
+  - [-] Bewertungen
+    - [x] Erstellen
+    - [-] Anzeigen
   - [ ] Dashboard-Layout
     - [ ] Login-Status
     - [ ] Eingabeformular
