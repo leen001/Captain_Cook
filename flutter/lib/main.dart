@@ -144,6 +144,9 @@ class _MainAppState extends State<MainApp> {
                           horizontal: 8, vertical: 16),
                       child: Column(
                         children: <Widget>[
+                          const SelectedIngredients(
+                            dismissable: true,
+                          ),
                           Consumer<AvailableIngredients>(
                               builder: (context, value, child) => Row(
                                     mainAxisAlignment:
@@ -152,12 +155,22 @@ class _MainAppState extends State<MainApp> {
                                       Expanded(
                                         child: Padding(
                                           padding: const EdgeInsets.all(20.0),
-                                          child: Column(children: [
-                                            const AutoCompleteIngredients(),
-                                            const SelectedIngredients(
-                                              dismissable: true,
-                                            )
-                                          ]
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Expanded(
+                                                    child:
+                                                        AutoCompleteIngredients()),
+                                                IconButton(
+                                                    onPressed: () {
+                                                      _openRecipeOutput();
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.search),
+                                                    color: Colors.indigo),
+                                              ]
                                               //  Text(value.selected
                                               //     .map((e) => e)
                                               //     .toList()
@@ -167,12 +180,6 @@ class _MainAppState extends State<MainApp> {
                                       ),
                                     ],
                                   )),
-                          IconButton(
-                              onPressed: () {
-                                _openRecipeOutput();
-                              },
-                              icon: const Icon(Icons.search),
-                              color: Colors.indigo),
                           const SizedBox(
                             height: 20,
                           ),
