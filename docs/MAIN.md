@@ -86,13 +86,13 @@ definiert. Diese sind:
 
 *User Stories*
 
-- Als User möchte ich mit der Anwendung Rezeptvorschläge abfragen, um Lebensmittelverschwendung durch Wiederverwertung von zu Hause verbliebenen Resten zu verringern.
+- Als User möchte ich mithilfe der Anwendung Rezeptvorschläge abfragen und somit die Lebensmittelverschwendung verringern, indem ich zu Hause verbliebenen Resten wiederverwerte.
 
-- Als User möchte ich Rezepte bewerten, um meine Meinung zum Rezept sowie Verbesserungsvorschläge dazu mit anderen Nutzern der Anwendung auszutauschen.
+- Als User möchte ich Rezepte bewerten, um meine Meinung zum Rezept zu äußern aber auch Verbesserungsvorschläge für andere Nutzer zu hinterlassen. Dadurch möchte ich auch einen Austausch mit anderen Nutzern der Anwendung haben und ermöglichen.
 
-- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld sparen und Lebensmittelverschwendung vorbeugen kann.
+- Als User möchte ich eine Einkaufsliste verwenden, um nicht vorhandene Zutaten hinzuzufügen, womit ich mir Zeit und Geld spare und die Lebensmittelverschwendung vorbeugen kann.
 
-- Als User möchte ich  die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Hinzufügen von Bewertungegn und Erstellung einer Einkaufsliste nutzen zu können.
+- Als User möchte ich  die Möglichkeit haben mich an- und abzumelden, um Funktionen wie das Hinzufügen von Bewertungegn und Erstellung einer Einkaufsliste zu nutzen.
 
 ### Nicht-funktionale Anforderungen
 *Skalierbarkeit, Authorization, jeweils mit Implementierung*
