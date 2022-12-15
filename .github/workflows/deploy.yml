@@ -44,7 +44,7 @@ jobs:
           source: "./*"
           target: ${{ env.TARGET_PATH }}
           overwrite: true
-          rm: true
+          # rm: true
 
       - name: Executing remote command
         uses: appleboy/ssh-action@master
