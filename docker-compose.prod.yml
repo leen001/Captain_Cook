@@ -26,8 +26,8 @@ services:
     env_file:
       - tokens.env
     networks:
-      - default
       - web
+      - default
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cc-api.entrypoints=https"
