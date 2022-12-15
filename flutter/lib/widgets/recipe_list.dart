@@ -1,11 +1,7 @@
-import 'dart:convert';
-import 'dart:math';
 import 'package:captain_cook/states.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:captain_cook/api.dart';
 import 'package:captain_cook/main.dart';
-import 'package:material_design_icons_flutter/icon_map.dart';
 import 'package:provider/provider.dart';
 
 class RecipeList extends StatefulWidget {

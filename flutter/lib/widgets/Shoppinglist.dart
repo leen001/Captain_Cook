@@ -2,25 +2,24 @@ import 'package:flutter/material.dart';
 
 class Shoppinglist extends StatefulWidget {
   //const shoppinglist({super.key});
-  Shoppinglist({required this.name, required this.checked});
+  Shoppinglist({super.key, required this.name, required this.checked});
   final String name;
   bool checked;
   @override
   State<Shoppinglist> createState() => _ShoppinglistState();
 }
 
-
 class _ShoppinglistState extends State<Shoppinglist> {
   final TextEditingController _textFieldController = TextEditingController();
   final List<Shoppinglist> _shoppinglist = <Shoppinglist>[];
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Shopping List'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Shopping List'),
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         children: _shoppinglist.map((Shoppinglist shoppinglist) {
           return ShoppinglistItem(
             shoppinglist: shoppinglist,
@@ -31,52 +30,50 @@ class _ShoppinglistState extends State<Shoppinglist> {
       floatingActionButton: FloatingActionButton(
           onPressed: () => _displayDialog(),
           tooltip: 'Add Item',
-          child: Icon(Icons.add)),
+          child: const Icon(Icons.add)),
     );
   }
 
+  void _addShoppinglistItem(String name) {
+    setState(() {
+      _shoppinglist.add(Shoppinglist(name: name, checked: false));
+    });
+    _textFieldController.clear();
+  }
 
-void _addShoppinglistItem(String name) {
-	setState(() {
-	  _shoppinglist.add(Shoppinglist(name: name, checked: false));
-	});
-	_textFieldController.clear();
+  void _handleShoppinglistChange(Shoppinglist shoppinglist) {
+    setState(() {
+      shoppinglist.checked = !shoppinglist.checked;
+    });
+  }
+
+  Future<void> _displayDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add a new todo item'),
+          content: TextField(
+            controller: _textFieldController,
+            decoration: const InputDecoration(hintText: 'Type your new todo'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Add'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _addShoppinglistItem(_textFieldController.text);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //throw UnimplementedError();
 }
-
-void _handleShoppinglistChange(Shoppinglist shoppinglist) {
-	setState(() {
-	  shoppinglist.checked = !shoppinglist.checked;
-	});
-}
-
-Future<void> _displayDialog() async {
-	return showDialog<void>(
-	  context: context,
-	  barrierDismissible: false, // user must tap button!
-	  builder: (BuildContext context) {
-	    return AlertDialog(
-	      title: const Text('Add a new todo item'),
-	      content: TextField(
-	        controller: _textFieldController,
-	        decoration: const InputDecoration(hintText: 'Type your new todo'),
-	      ),
-	      actions: <Widget>[
-	        TextButton(
-	          child: const Text('Add'),
-	          onPressed: () {
-	            Navigator.of(context).pop();
-	            _addShoppinglistItem(_textFieldController.text);
-	          },
-	        ),
-	      ],
-	    );
-	  },
-	);
-}
-
-    //throw UnimplementedError();
-}
-
 
 class ShoppinglistItem extends StatelessWidget {
   ShoppinglistItem({
@@ -105,7 +102,8 @@ class ShoppinglistItem extends StatelessWidget {
       leading: CircleAvatar(
         child: Text(shoppinglist.name[0]),
       ),
-      title: Text(shoppinglist.name, style: _getTextStyle(shoppinglist.checked)),
+      title:
+          Text(shoppinglist.name, style: _getTextStyle(shoppinglist.checked)),
     );
   }
 }
