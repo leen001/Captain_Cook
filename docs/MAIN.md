@@ -39,10 +39,12 @@ Oft bereiten Kunden eine Mahlzeit mithilfe von Koch-Websites oder Kochbüchern z
 Die Architekten entscheiden über Designs und neue Funktionen des Produkts, die in Zukunft die Anwendung 
 erweitern.
 
+Datenbankadministratoren die Nutzer und deren Einkaufslisten verwalten können.
+
 Die Programmierer setzten die Design und Funktionsvorschläge, auf die sich die Architekten geeinigt 
 haben, in Code um.
 
-Die Endnutzer sind die tatsächliche Zielgruppe der Anwendung und interagieren mit dieser um die 
+Die Endnutzer sind die tatsächliche Zielgruppe der Anwendung und interagieren mit dieser, um die 
 veröffentlichten Funktionen für sich zu verwenden. Hier kann in zwei Arten unterschieden werden:
   
   1. Nutzer die lediglich den öffentlichen Teil der Anwendung (Rezeptsuche) verwenden
@@ -66,9 +68,12 @@ Nutzers in dieser zu speichern und bei Gelegenheit wieder aus der Datenbank abzu
 ### Komponentendiagramm
 ![Komponentendiagramm](architecture.drawio.png)
 
-Die Architektur der Anwendung ist im oberen Diagramm dargestellt. Die Anwendung besteht aus einem Backend, welches in Python mit dem Flask-Framework implementiert wurde. Das Backend stellt eine REST-API zur Verfügung, die von einem Frontend aus genutzt wird. Das Frontend wurde dabei mit dem Flutter-Framework implementiert. Die Daten werden in einer MariaDB-Datenbank gespeichert und die Kommunikation zwischen den Komponenten erfolgt über HTTP-Requests.
+Die Architektur der Anwendung ist im oberen Diagramm dargestellt. Die Anwendung besteht aus einem Backend, welches in Python mit dem Flask-Framework implementiert wurde. Das Backend stellt eine REST-API zur Verfügung, die von einem Frontend aus genutzt wird. Das Frontend wurde dabei mit dem Flutter-Framework implementiert. Die Daten werden in einer MariaDB-Datenbank gespeichert und die Kommunikation zwischen den Komponenten erfolgt über HTTP-Requests. Zudem findet zwei Mal täglich ein Backup dieser statt.
 
 Zusätzlich zu den Komponenten der Anwendung gibt es noch einen externen ID-Provider, der für die Authentifizierung der Benutzer zuständig ist. Die Kommunikation zwischen dem Frontend und dem ID-Provider erfolgt über OAuth2. Die erhaltenen Tokens werden von dem Backend für die Authentifizierung der Benutzer mit Hilfe der selben OAuth2-Schnittstelle validiert.
+
+### Architektur Entscheidungen
+1. 
 
 <!-- TODO: einzelne Komponenten genauer beschreiben -->
 
@@ -102,10 +107,144 @@ Zusammen bieten diese Technologien eine leistungsstarke und flexible Architektur
 
 Für die funktionalen Anforderungen wurden vier Use-Cases 
 definiert. Diese sind:
+
+#### Usecase 1
+1. Beschreibung:
 - Die Anwendung muss es Benutzern ermöglichen, Rezepte abzufragen.
+
+2. Aktoren:
+- Benutzer
+- Datenbank
+- API-Verbindung
+- Websiten-Host
+
+3. Voraussetzungen:
+- Aktive Verbindung zum Internet
+- Rezepte in der DB vorhanden
+- API muss erreichbar sein
+
+4. Grundlegender Ablauf der Ereignisse:
+- Vorgang beginnt mit Eingabe von Zutaten im Suchfeld
+- Anfrage an Datenbank versendet
+- Abgleich eingegebene Zutaten mit Zutaten in der Datenbank
+- Bestätigung wenn Zutaten in Datenbank vorhanden
+- Zutaten an API mit POST Befehl
+- Antwort der API mit 5 Rezeptvorschlägen
+- Anzeigen der ausgegebenen Rezeptvorschläge
+
+#### Usecase 2
+1. Beschreibung:
 - Die Anwendung muss es Benutzern ermöglichen, Bewertungen für Rezepte hinzuzufügen.
-- Die Anwendung muss es Benutzern ermöglichen, eine Einkaufsliste zu benutzen/bearbeiten.
-- Die Anwendung muss es Benutzern ermöglichen, sich an- und abzumelden.
+2. Aktoren
+Benutzer
+Datenbank
+API-Verbindung
+Websiten-Host
+Google API-Verbindung
+
+3. Voraussetzungen
+Verbindung zum Internet steht, damit verbunden auch:
+- Muss der Google-API Endpoint ansprechbar sein 
+- erfolgreiche Anmeldung mit bestehendem Google-Account durchgeführt
+- Website mit funktionierender API-Verbindung zur Datenbank
+
+4. Grundsätzlicher Ablauf
+  - Vorgang beginnt mit Aufruf der Website
+  - Usecase 4 wird durchgeführt
+  - Usecase 1 wird ausgeführt
+  - Rezepte mit aktuell bestehenden Bewertungs-Score werden abgerufen 
+  - Benutzer wählt anhand der Sternen-Ansicht seine Anzahl an Sternen aus
+  - API POST Befehl wird durchgeführt, während dessen keine andere API Anfrage möglich
+  - Gesendeter Wert wird mit bestehendem verrechnet 
+  - Neuer Bewertungs-Score wird angezeigt 
+
+5. Alternative Abläufe 
+  - Zeitgleiche Bewertung:
+    - Wenn die Anfrage, die Bewertung zu setzen, ausgeführt wird, bevor eine andere API-Anfrage, wie beispielsweise das Hinzufügen einer Zutat zur Einkaufsliste, vollständig ausgeführt wurde, dann 
+      - bricht die Anfrage mit einer Fehlermeldung ab
+      - Bewertung kann nicht abgegeben werden
+  
+  - wiederholte Bewertung:
+    - Wenn eine Bewertung für das ausgewählte Rezept bereits abgegeben wurde, kann eine erneute Bewertung nicht ausgeführt werden, dann
+      - wird eine Fehlermeldung dargestellt, dass eine Bewertung von diesem Benutzer schon abgegeben wurde
+
+6. Schlüssel-Szenario
+  - Website liefert keine Rückmeldung zu Ereignissen
+
+7. Nachbedingungen
+  - Erfolgreiche Durchführung: Bewertung für Rezept abgegeben 
+  - Fehlgeschlagene Durchführung: Log-Einträge wurden entsprechend aktualisiert. 
+
+
+Grundlegender Ablauf der Ereignisse
+
+#### Usecase 3
+1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände der Einaufsliste hinzuzufügen.
+2. Aktoren
+  - Nutzer
+  - Datenbank
+  - API
+3. Voraussetzungen
+  - Aktive Internetverbindung des Nutzers
+  - Webseite muss erreichbar sein
+  - Nutzer muss angemeldet sein (siehe Usecase 5)
+4. Grundlegender Ablauf der Ereignisse
+  - Einkaufsliste des Nutzers wird über die API aus der Datenbank geholt
+  - Eingabe des Nutzers in das Textfeld
+  - API Call 
+  - hinzufügen des Gegenstands in die Einkaufsliste des korrekten Nutzers in der Datenbank
+  
+
+#### Usecase 4
+1. Die Anwendung muss es Benutzern ermöglichen, Gegenstände aus der Einaufsliste zu entfernen.
+2. Aktoren
+  - Nutzer
+  - Datenbank
+  - API
+3. Voraussetzungen
+  - Aktive Internetverbindung des Nutzers
+  - Webseite muss erreichbar sein
+  - Nutzer muss angemeldet sein (siehe Usecase 5)
+4. Grundlegender Ablauf der Ereignisse
+  - Einkaufsliste des Nutzers wird über die API aus der Datenbank geholt
+  - Löschen eines Gegenstands vom Nutzer über das UI
+  - API Call 
+  - enfernen des Gegenstands aus der Einkaufsliste des korrekten Nutzers in der Datenbank
+
+
+#### Usecase 5
+1. Die Anwendung muss es Benutzern ermöglichen, sich anzumelden.
+2. Aktoren 
+  - Nutzer
+  - Google OAuth
+  - public API
+3. Vorraussetzungen:
+  - Aktive Internetverbindung des Nutzers
+  - Webseite muss erreichbar sein
+  - Google OAuth muss erreichbar sein
+  - public API muss erreichbar sein
+4. Grundlegender Ablauf der Ereignisse
+  - Nutzer wählt den SignIn Button
+  - Weiterleitung zu Google OAuth
+  - Token Validierung über die public API
+5. Alternative Abläufe
+  - Nutzer besitzt kein Google Konto und wird nicht in der Lage sein sich anzumelden
+
+
+#### Usecase 6
+1. Die Anwendung muss es Benutzern ermöglichen, sich abzumelden.
+2. Aktoren 
+  - Nutzer
+  - Google OAuth
+  - public API
+3. Vorraussetzungen:
+  - Aktive Internetverbindung des Nutzers
+  - Webseite muss erreichbar sein
+  - Nutzer muss angemeldet sein (siehe Usecase 5)
+4. Grundlegender Ablauf der Ereignisse
+  - Nutzer wählt den SignOut Button
+  - Frontend Library behandelt den SignOut
+
 
 *User Stories*
 
@@ -149,14 +288,17 @@ Wie veranschaulicht besteht unser Design aus 3 Domains: Rezept-Daten, Einkaufsli
 
 <!-- TODO-->
 
+
 #### API
-Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren a und b als: cos(a,b) = a*b / (|a|*|b|). 
-Dabei ist a*b die Skalarprodukt von a und b und |a| die Länge des Vektors a und |b| die Länge des Vektors b. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
+Die API liefert abhängig von der erhaltenen Such-Eingabe, Rezepte zurück sowie einen Ähnlichkeitswert. Aktuell bedient sich die API dabei an einem Datensatz fester Größe, der etwa 2000 Rezepte umfasst. Um Rezeptempfehlungen zu geben wird die Ähnlichkeit zwischen den Rezepten und der Such-Eingabe ermittelt. Hierfür wird die Cosinus-Ähnlichkeit genutzt. Die Cosinus-Ähnlichkeit ist ein Maß für die Ähnlichkeit zwischen zwei Vektoren. Sie ist definiert zwischen zwei Vektoren $a$ und $b$ als: 
+$$ cos(a,b) = \frac{a*b}{(|a|*|b|)} $$ 
+Dabei ist $a*b$ die Skalarprodukt von $a$ und $b$ und $|a|$ die Länge des Vektors $a$ und $|b|$ die Länge des Vektors $b$. Dabei wird ein Vektor jeweils durch ein Rezept aus dem Datensatz repräsentiert und der andere durch die Such-Eingabe. 
 
 Um die Rezepte als Vektor zu repräsentieren, wird jede Zutat eines Rezeptes als eine Komponente des Vektors dargestellt. Um diese Darstellung zu ermöglichen wurde der TF-IDF Vectorizer verwendet. Dieser berechnet die Term-Frequency (TF) und die Inverse Document Frequency (IDF) für jede Zutat eines Rezeptes. Es wird also somit jeder Zutat ein Gewicht, abhängig von der Häufigkeit, der Zutat im spezifischen Rezept und der Häufigkeit in allen Rezepten. Somit wird garantiert dass, auch nicht häufig vorkommende Zutaten berücksichtigt werden. Auf diese weise wurde ein TF-IDF-Modell trainiert, dass allen Zutaten eine Gewichtung nach deren Relevanz zugeordnet. Im weitern Verlauf kann dieses Modell dazu trainiert werden auch Allergien und Intoleranzen eines Nutzers zu berücksichtigen, indem die Gewichtung der Zutaten entsprechend angepasst wird bzw. auf 0 gesetzt wird. So würden dann z.B. die Milchprodukte bei einem Laktoseintoleranten Nutzer eine niedrigere Gewichtung erhalten und die Wahrscheinlichkeit, dass ein Rezept mit Milchprodukten empfohlen wird, würde sinken. Allerdings ist dies nicht Kernfunktion des Systems und wurde daher noch nicht implementiert. Die erhaltene Gewichtung der Zutaten wird dann in einem Vektor umgewandelt, der die Rezepte repräsentiert. Auch die Such-Eingabe wird auf diese Weise in einen Vektor umgewandelt.
 Anschließend kann die Cosine Similarity zwischen allen Rezpten und der Such-Eingabe berechnet werden. Desto geriner der Cosinus-Winkel zwischen den Vektoren ist, desto größer ist die Ähnlichkeit. Die Rezepte mit der höchsten Cosinus-Ähnlichkeit werden dann als Such-Ausgabe zurückgegeben und sind absteigend sortiert.
 Für die Berechnung der Cosinus-Ähnlichkeit wird die Funktion cosine_similarity aus dem sklearn.metrics.pairwise Modul verwendet. 
 
+Desweiteren ist geplant den Datensatz noch zu erweitern und weitere Rezepte zu scrapen. Dies würde erfodern, dass das Model neu trainiert wird. Die erweitere API würde dann auch als Microservice für alle Funktionalitäten dienen. 
 
 ### Observability
 *Logging, Monitoring, Tracing*
@@ -202,6 +344,8 @@ Beim Deployment der Anwendung auf einem VPS wird die Anwendung zunächst auf ein
 Um die einzelnen Services (Frontend, API, Datenbank) gemeinsam zu starten, verwenden wir Docker-Compose. Docker-Compose ist ein Tool, das es Entwicklern ermöglicht, mehrere Docker-Container zu starten und zu verwalten. Docker-Compose verwendet dabei eine Konfigurationsdatei, in der die einzelnen Container definiert werden. Auf diese Weise wird das Deployment der Anwendung vereinfacht und beschleunigt.
 
 #### Build & Deployment Pipeline
+
+![Pipeline](Build_Deploy_pipeline.png)
 Die Build & Deployment Pipeline für dieses Projekt wurde mit Hilfe von GitHub Actions realisiert. GitHub Actions ist ein Tool, mit dem man automatisierte Workflows erstellen kann, die auf Ereignisse in einem GitHub-Repository ausgelöst werden. Dadurch kann man zum Beispiel automatisch einen Build-Prozess starten, wenn Änderungen in einem bestimmten Branch vorgenommen werden. Die erstellte Build-Version kann dann auf einem VPS oder in einer Cloud-Umgebung bereitgestellt werden, wobei auch hier wieder automatisierte Workflows genutzt werden können. GitHub Actions erleichtert das Erstellen und Verwalten von Build- und Deployment-Pipelines, indem es möglich ist, alles in einem GitHub-Repository zu konfigurieren und zu verwalten.
 
 Um Deployment mit GitHub Actions zu nutzen, müssen Entwickler zunächst einen Workflow in ihrem GitHub-Repository erstellen. Dieser Workflow besteht aus einer Reihe von Schritten, die in einer bestimmten Reihenfolge ausgeführt werden, um den Code bereitzustellen. Jeder Schritt kann dabei ein eigenes Skript oder eine Aktion von GitHub sein, die eine bestimmte Aufgabe ausführt.
