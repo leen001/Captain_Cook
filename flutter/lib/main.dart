@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'states.dart';
-import 'widgets/shoppinglist.dart';
+import 'widgets/shopping_list.dart';
 import 'widgets/recipe_list.dart';
 import 'widgets/auto_complete_ingredients.dart';
 import 'widgets/google_auth_status.dart';
