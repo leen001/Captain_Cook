@@ -108,8 +108,8 @@ Eine weitere wichtige Nicht-funktionale Anforderung ist die Benutzerfreundlichke
 *Logging, Monitoring, Tracing*
 cpntaoner deülpyen logs einsehen, metirken cpu auslast monitoren
 
-Aktuell ist das Observability begrenzt, da es zurzeit nur durch die Nutzung von Docker-Container für das Software Deployment stattfindete. Die Nutzung von Container bringt die Möglichkeit Logs einzusehen. Außerdem werden Metriken wie CPU Auslast aufgezeichnet, die für das Monitoring behilflich sind.
-Zukünftig soll aber ein weiter aufbereitetes Observability möglich sein mit der Hilfe von verschiedenen Tools.
+Aktuell ist das Observability begrenzt, da es zurzeit nur durch die Nutzung von Docker-Container für das Software Deployment stattfindet. Die Möglichkeit, Logs anzuzeigen, wird durch die Verwendung von Containern bereitgestellt. Darüber hinaus werden für die Überwachung nützliche Metriken wie die CPU-Auslastung aufgezeichnet.
+Zukünftig soll aber  Observability in größerem Maßstab mit Hilfe verschiedener Tools möglich sein.
 Im folgenden werden diese näher beschrieben:
 
 Prometheus ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metriken zur Weiterverarbeitung zu sammeln.
