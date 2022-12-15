@@ -81,13 +81,15 @@ class Recipe {
 class Ingredient {
   final String name;
   final String? icon;
+  final int? id;
 
-  const Ingredient({required this.name, this.icon});
+  const Ingredient({required this.name, this.icon, this.id});
 
   factory Ingredient.fromJson(Map<String, dynamic> json) {
     return Ingredient(
       name: json['name'],
       icon: json['icon'],
+      id: json['id'],
     );
   }
 }
@@ -99,6 +101,7 @@ class CCApiConstants {
   static String users = '/users';
   static String recipes = '/recipes';
   static String ingredients = '/ingredients';
+  static String list = '/list';
 }
 
 class CCApi {
@@ -131,6 +134,66 @@ class CCApi {
       return recipes;
     } else {
       throw Exception('Failed to load recipes: ${response.body}');
+    }
+  }
+
+  Map<String, String> _buildAuthHeaders(Map<String, String>? authHeaders) {
+    Map<String, String> headers = authHeaders ?? {};
+    headers['Content-type'] = 'application/json';
+    return headers;
+  }
+
+  List<Ingredient> _parseShoppingList(List<dynamic> json) {
+    final List<Ingredient> ingredients =
+        json.map((i) => Ingredient.fromJson(i)).toList();
+    return ingredients;
+  }
+
+  Future<List<Ingredient>> getShoppingList(
+      Future<Map<String, String>>? authHeaders) async {
+    Map<String, String> headers = await authHeaders ?? {};
+    headers['Content-type'] = 'application/json';
+    final response = await http.get(
+        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}'),
+        headers: _buildAuthHeaders(await authHeaders));
+    if (response.statusCode == 200) {
+      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+    } else {
+      throw Exception('Failed to load shopping list: ${response.body}');
+    }
+  }
+
+  Future<List<Ingredient>> addIngredientToShoppingList(
+      String ingredient, Future<Map<String, String>>? authHeaders) async {
+    String body = jsonEncode({
+      'ingredient': {'name': ingredient}
+    });
+    final response = await http.post(
+        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
+        headers: _buildAuthHeaders(await authHeaders),
+        body: body);
+    if (response.statusCode == 200) {
+      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+    } else {
+      throw Exception(
+          'Failed to add ingredient to shopping list: ${response.body}');
+    }
+  }
+
+  Future<List<Ingredient>> removeIngredientFromShoppingList(
+      int ingredientId, Future<Map<String, String>>? authHeaders) async {
+    String body = jsonEncode({
+      'ingredient_id': ingredientId,
+    });
+    final response = await http.delete(
+        Uri.parse('${CCApiConstants.baseUrl}${CCApiConstants.list}/item'),
+        headers: _buildAuthHeaders(await authHeaders),
+        body: body);
+    if (response.statusCode == 200) {
+      return _parseShoppingList(jsonDecode(response.body)['ingredients']);
+    } else {
+      throw Exception(
+          'Failed to remove ingredient from shopping list: ${response.body}');
     }
   }
 }

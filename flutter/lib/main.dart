@@ -103,8 +103,7 @@ class _MainAppState extends State<MainApp> {
   void _openshoppinglist() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => Shoppinglist(name: 'test', checked: false)),
+      MaterialPageRoute(builder: (context) => const Shoppinglist()),
     );
   }
 
