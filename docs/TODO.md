@@ -14,8 +14,8 @@
   - [-] Bewertungen
     - [x] Erstellen
     - [-] Anzeigen
-  - [ ] Dashboard-Layout
-    - [ ] Login-Status
+  - [-] Dashboard-Layout
+    - [x] Login-Status
     - [ ] Eingabeformular
   - [ ] (weitere Rezept-Ansichten)
     - [ ] zufällig
