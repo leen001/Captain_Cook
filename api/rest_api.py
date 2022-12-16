@@ -248,7 +248,7 @@ docs.register(clear_list)
 
 
 @app.post("/recipes/<recipe_id>/rating")
-@use_kwargs({"rating": fields.Int(), "comment": fields.Str(missing=None)})
+@use_kwargs({"rating": fields.Int(), "comment": fields.Str(allow_none=True)})
 @marshal_with(RecipeSchema, code=200)
 @marshal_with(BasicError, code=404, description="Recipe not found")
 @marshal_with(BasicError, code=400, description="Wrong rating input or already rated")

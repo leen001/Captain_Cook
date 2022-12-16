@@ -1,4 +1,5 @@
 [![Deploy to VPS](https://github.com/leen001/Captain_Cook/actions/workflows/deploy.yml/badge.svg)](https://github.com/leen001/Captain_Cook/actions/workflows/deploy.yml)
+[![CodeQL](https://github.com/leen001/Captain_Cook/actions/workflows/codeql.yml/badge.svg)](https://github.com/leen001/Captain_Cook/actions/workflows/codeql.yml)
 # Koch mit deinem Kühlschrank - Rezepte für deine Reste *(Captain Cook)*
 Dokumentation für das Projekt *Captain Cook* im Rahmen des Kurses *Advanced Software Engineering* 2022 (DHBW Mannheim)
 Gruppenmitglieder: Arne Kapell, Finn Callies, Irina Jörg, Akshaya Jeyaraj, Gurleen Kaur Saini

@@ -1,14 +1,13 @@
 - [ ] Dokumentation
   - [x] Operational Model
   - [-] Observability
-    - [ ] aktuell nur begrenzt über *Portainer*
+    - [x] aktuell nur begrenzt über *Portainer*
     - [x] perspektivisch geplant: *Prometheus*, *Grafana*, etc.
   - [x] User-Stories (als Ergänzung zu Use-Cases)
   - [x] Akteure (Benutzer, Systeme, Hardware)
-  - [ ] Domain-Driven-Design (wo event-driven?)
+  - [x] Domain-Driven-Design (wo event-driven?)
   - [x] Skalierbarkeits-Modell (Konzept)
-  - [ ] Diagramme überarbeiten (**PFEILE**: Verbindungsaufbau?)
-  - [ ] ???
+  - [x] Diagramme überarbeiten (**PFEILE**: Verbindungsaufbau?)
 - [ ] Features implementieren (Arne, Irina)
   - [x] Zutaten der Liste hinzufügen (vom Rezept)
   - [-] Bewertungen
@@ -16,8 +15,8 @@
     - [-] Anzeigen
   - [-] Dashboard-Layout
     - [x] Login-Status
-    - [ ] Eingabeformular
+    - [x] Eingabeformular
   - [ ] (weitere Rezept-Ansichten)
-    - [ ] zufällig
+    - [x] zufällig
     - [ ] Top-Bewertungen
   - [ ] (Nachladen von Empfehlungen)
