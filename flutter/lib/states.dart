@@ -117,6 +117,8 @@ class AuthenticatedUser extends ChangeNotifier {
   }
 
   void signOut() {
-    _googleSignIn.disconnect().then((_) => notifyListeners());
+    _googleSignIn
+        .disconnect()
+        .then((_) => _googleSignIn.signOut().then((_) => notifyListeners()));
   }
 }

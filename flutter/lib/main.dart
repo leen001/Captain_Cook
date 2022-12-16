@@ -87,7 +87,14 @@ class _MainAppState extends State<MainApp> {
   void _openRecipeOutput() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RecipeList()),
+      MaterialPageRoute(
+          builder: (context) => RecipeList(
+                title:
+                    (Provider.of<AvailableIngredients>(context).selectedLength >
+                            0)
+                        ? 'Recipes for your ingredients'
+                        : 'Random recipe',
+              )),
     );
   }
 
@@ -170,10 +177,25 @@ class _MainAppState extends State<MainApp> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              primary: true,
+            child: Center(
+              // primary: true,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  Text(
+                    "What are you cooking today?",
+                    style: TextStyle(
+                      fontSize: 40,
+                      color: Theme.of(context).primaryColor,
+                      shadows: const [
+                        Shadow(
+                          blurRadius: 1.0,
+                          color: Colors.black38,
+                          offset: Offset(0.0, 0.0),
+                        ),
+                      ],
+                    ),
+                  ),
                   Card(
                     elevation: 10,
                     child: Padding(
@@ -208,16 +230,22 @@ class _MainAppState extends State<MainApp> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TextButton(
-                                  onPressed: () {
-                                    _openRecipeOutput();
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
+                              ElevatedButton.icon(
+                                  onPressed: _openRecipeOutput,
+                                  label: const Text("Find Recipes",
+                                      style: TextStyle(fontSize: 20)),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 50, vertical: 30),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
                                   ),
-                                  child: const Text("Find Recipes")),
+                                  icon: const Icon(
+                                    MdiIcons.noodles,
+                                    color: Colors.white,
+                                    size: 50,
+                                  )),
                             ],
                           ),
                           const SizedBox(

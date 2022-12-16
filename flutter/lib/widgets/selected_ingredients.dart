@@ -14,7 +14,10 @@ class SelectedIngredients extends StatelessWidget {
                 .map((ingredient) => Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Chip(
-                      label: Text(ingredient),
+                      label: Text(ingredient,
+                          style: const TextStyle(fontSize: 15)),
+                      deleteIconColor: Colors.red,
+                      deleteButtonTooltipMessage: 'Remove ingredient',
                       onDeleted: dismissable
                           ? () {
                               availableIngredients.deselect(ingredient);

@@ -7,7 +7,7 @@ import 'package:rate/rate.dart';
 import 'selected_ingredients.dart';
 
 class RecipeList extends StatefulWidget {
-  const RecipeList({Key? key, this.title = 'Recipe List'}) : super(key: key);
+  const RecipeList({Key? key, this.title = 'Recipes'}) : super(key: key);
   final String title;
 
   @override
@@ -98,15 +98,18 @@ class _RecipeListState extends State<RecipeList> {
                                             const SizedBox(
                                               width: 10,
                                             ),
-                                            Chip(
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .primaryColor,
-                                                label: Text(
-                                                  '${item.recipe.score}%',
-                                                  style: const TextStyle(
-                                                      color: Colors.white),
-                                                )),
+                                            ((item.recipe.score ?? 0).toInt() >
+                                                    0)
+                                                ? Chip(
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .primaryColor,
+                                                    label: Text(
+                                                      '${item.recipe.score}%',
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
+                                                    ))
+                                                : const SizedBox(),
                                           ],
                                         ),
                                       ),
@@ -329,13 +332,22 @@ class _RecipeListState extends State<RecipeList> {
 
   Future<void> _getRecipes(BuildContext context) async {
     try {
-      final recipes = await CCApi().getRecipes(
-          Provider.of<AvailableIngredients>(context, listen: false).selected);
-      setState(() {
-        _loading = false;
-        _recipeListItems =
-            recipes.map((recipe) => RecipeListItem(recipe: recipe)).toList();
-      });
+      List<String> selectedIngredients =
+          Provider.of<AvailableIngredients>(context, listen: false).selected;
+      if (selectedIngredients.isNotEmpty) {
+        final recipes = await CCApi().getRecipes(selectedIngredients);
+        setState(() {
+          _loading = false;
+          _recipeListItems =
+              recipes.map((recipe) => RecipeListItem(recipe: recipe)).toList();
+        });
+      } else {
+        final random = await CCApi().randomRecipe();
+        setState(() {
+          _loading = false;
+          _recipeListItems = [RecipeListItem(recipe: random)];
+        });
+      }
     } catch (e) {
       print(e);
       setState(() {

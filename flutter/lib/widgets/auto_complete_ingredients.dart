@@ -49,17 +49,21 @@ class _AutoCompleteIngredientsState extends State<AutoCompleteIngredients> {
           FocusNode focusNode,
           VoidCallback onFieldSubmitted) {
         textEditingController = fieldTextEditingController;
-        return TextField(
-          controller: fieldTextEditingController,
-          focusNode: focusNode,
-          decoration: const InputDecoration(
-            labelText: 'Ingredient',
-            hintText: 'Enter an ingredient',
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 30.0),
+          child: TextField(
+            controller: fieldTextEditingController,
+            focusNode: focusNode,
+            decoration: const InputDecoration(
+              labelText: 'Ingredient',
+              hintText: 'Enter an ingredient',
+              // labelStyle: TextStyle(fontSize: 30),
+            ),
+            onSubmitted: (String value) {
+              value = '';
+              onFieldSubmitted();
+            },
           ),
-          onSubmitted: (String value) {
-            value = '';
-            onFieldSubmitted();
-          },
         );
       },
     );

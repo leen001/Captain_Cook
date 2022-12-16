@@ -270,4 +270,18 @@ class CCApi {
       throw Exception('Failed to add rating to recipe: $e');
     }
   }
+
+  Future<Recipe> randomRecipe() async {
+    try {
+      final response = await http.get(Uri.parse(
+          '${CCApiConstants.baseUrl}${CCApiConstants.recipes}/random'));
+      if (response.statusCode == 200) {
+        return Recipe.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      throw Exception('Failed to load random recipe: $e');
+    }
+  }
 }
