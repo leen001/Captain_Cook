@@ -103,13 +103,17 @@ class _MainAppState extends State<MainApp> {
     return Scaffold(
       //resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: const [
-            Text("Captain"),
-            Icon(MdiIcons.chefHat),
-            Text("Cook"),
-          ],
+        toolbarHeight: 80,
+        title: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: const [
+              Text("Captain"),
+              Icon(MdiIcons.chefHat),
+              Text("Cook"),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -117,44 +121,48 @@ class _MainAppState extends State<MainApp> {
             tooltip: "Settings",
             onPressed: _openSettings,
           ),
-          FutureBuilder(
-            future: Provider.of<AuthenticatedUser>(context).isSignedIn,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(),
-                );
-              }
-              IconData iconData = (snapshot.data!) ? Icons.logout : Icons.login;
-              return Consumer<AuthenticatedUser>(
-                builder: (context, user, child) {
-                  if (user.hasError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          user.error,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                  return IconButton(
-                    icon: Icon(iconData),
-                    tooltip: (snapshot.data!) ? "Logout" : "Login",
-                    onPressed: () {
-                      if (snapshot.data!) {
-                        user.signOut();
-                      } else {
-                        user.signIn();
-                      }
-                    },
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 20, 0),
+            child: FutureBuilder(
+              future: Provider.of<AuthenticatedUser>(context).isSignedIn,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(),
                   );
-                },
-              );
-            },
+                }
+                IconData iconData =
+                    (snapshot.data!) ? Icons.logout : Icons.login;
+                return Consumer<AuthenticatedUser>(
+                  builder: (context, user, child) {
+                    if (user.hasError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            user.error,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    return IconButton(
+                      icon: Icon(iconData),
+                      tooltip: (snapshot.data!) ? "Logout" : "Login",
+                      onPressed: () {
+                        if (snapshot.data!) {
+                          user.signOut();
+                        } else {
+                          user.signIn();
+                        }
+                      },
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -188,22 +196,30 @@ class _MainAppState extends State<MainApp> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment
                                                       .spaceBetween,
-                                              children: [
-                                                const Expanded(
+                                              children: const [
+                                                Expanded(
                                                     child:
                                                         AutoCompleteIngredients()),
-                                                IconButton(
-                                                    onPressed: () {
-                                                      _openRecipeOutput();
-                                                    },
-                                                    icon: const Icon(
-                                                        Icons.search),
-                                                    color: Colors.indigo),
                                               ]),
                                         ),
                                       ),
                                     ],
                                   )),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextButton(
+                                  onPressed: () {
+                                    _openRecipeOutput();
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
+                                  ),
+                                  child: const Text("Find Recipes")),
+                            ],
+                          ),
                           const SizedBox(
                             height: 20,
                           ),
