@@ -25,7 +25,7 @@ Online-version dieser Dokumentation: [MD](https://github.com/leen001/Captain_Coo
   - [Weitere Diagramme](#weitere-diagramme)
 - [Deployment und Operations](#deployment-und-operations)
   - [Deployment](#deployment)
-    - [Build \& Deployment Pipeline](#build--deployment-pipeline)
+    - [**Build \& Deployment Pipeline**](#build--deployment-pipeline)
   - [Operations](#operations)
   - [Statischer Code-Report](#statischer-code-report)
 - [Deep Dive: API](#deep-dive-api)
@@ -37,6 +37,7 @@ Die grundsätzliche Motivation des Projektes besteht darin dazu beizutragen, die
 
 Oft bereiten Kunden eine Mahlzeit mithilfe von Koch-Websites oder Kochbüchern zu. Doch nicht immer haben sie die benötigten Zutaten zur Hand. Daher basieren die Empfehlungen des Empfehlungssystems auf Produkten, die der Kunde entweder zu Hause im Kühlschrank und im Vorratsschrank hat oder die er gerade im örtlichen Supermarkt gekauft hat. Sollte doch einmal etwas fehlen, lassen sich einzelne Zutaten direkt auf die Einkaufsliste setzen, sodass die bereits vorhandenen optimal genutzt werden können.
 
+---
 ### Akteure
 
 Die **Architekten** entscheiden über Designs und neue Funktionen des Produkts, die in Zukunft die Anwendung erweitern.
@@ -68,6 +69,7 @@ Die Architektur der Anwendung ist im oberen Diagramm dargestellt. Die Anwendung 
 
 Zusätzlich zu den Komponenten der Anwendung gibt es noch einen externen ID-Provider, der für die Authentifizierung der Benutzer zuständig ist. Die Kommunikation zwischen dem Frontend und dem ID-Provider erfolgt über OAuth2. Die erhaltenen Tokens werden von dem Backend für die Authentifizierung der Benutzer mit Hilfe der selben OAuth2-Schnittstelle validiert.
 
+---
 ### Konzept: Externer ID-Provider
 Wie bereits im [Komponentendiagramm](#komponentendiagramm) beschrieben, wird für die Authentifizierung der Benutzer ein externer ID-Provider verwendet. Konkret fiel die Entscheidung zu Gunsten von Google als ID-Provider aus, da hier eine große Anzahl an bereits registrierten Benutzern vorhanden ist und die Anbindung mit Hilfe bestehender Bibliotheken und Standard-Schnittstellen sehr einfach ist. Die Anbindung erfolgt über die OAuth2-Schnittstelle, die von Google bereitgestellt wird.
 
@@ -268,6 +270,7 @@ Ausblick: Mit MariaDB Enterprise ist die Anzahl der Kerne, der Arbeitsspeicher u
 Um eine horizontale Skalierung zu gewährleisten können auch mehrere Instanzen genutzt werden.
 Das nicht vorhandene Budget für dieses Projekt verhindert allerdings den Einsatz einer MariaDB Enterprise Lizenz.
 
+---
 ### Domain-Driven-Design
 ![Domain-Driven-Design](domain-driven.drawio.png)
 
@@ -277,34 +280,32 @@ Die Unterteilung und Modellierung hat uns geholfen, das Verständnis der Prozess
 
 Während große Teile der Anwendung von ihrer Architektur im klassischen, "Service-Oriented-Architecture"-Stil operieren, ist die Einkaufsliste-Domäne eine "Event-Driven-Architecture". Dies bedeutet, dass die Einkaufsliste-Domäne auf Ereignisse reagiert, die von der Rezept-Domäne ausgelöst werden. Dies ermöglicht es uns, die Einkaufsliste-Domäne von der Rezept-Domäne zu trennen und die Einkaufsliste-Domäne unabhängig von der Rezept-Domäne zu entwickeln. Beispielsweise lassen sich Zutaten aus einem Rezept der eigenen Einkaufsliste hinzufügen, ohne dass die Rezept-Domäne davon Kenntnis nehmen muss. Man kann gleichzeitig jedoch auch ein Element zur Einkaufsliste hinzufügen, das gar nicht in einem Rezept enthalten ist. Und auch beim Löschen eines Rezepts wird die Einkaufsliste nicht beeinflusst.
 
+---
 ### Observability
 *Logging, Monitoring, Tracing*
 
-Observability ist aktuell in einem stark eingeschränkten Rahmen umgesetzt. Bei der jetzigen Anwendungsgröße und -komplexität ist es nicht notwendig, umfangreiche Observability-Tools einzusetzen. Die einzelnen Container der App werden gemeinsam als *Stack* mit Hilfe von Docker-Compose auf einem VPS mit Docker als Container Environment gestartet und auf selbigem mittels *Portainer*, einem selbst vollständig containerisierten Tool für Management und Monitoring von Container-Hosts, überwacht. Man erhält dabei grundlegende Einblicke in Logs, Metriken und die Container selbst. Natürlich werden z.B. Logs nicht annähernd so gut aufbereitet wie bei einem professionellen Tool, aber es reicht für Entwicklungs-Zwecke wie Debugging und Monitoring aus.
+Observability ist aktuell in einem stark eingeschränkten Rahmen umgesetzt. Bei der jetzigen Anwendungsgröße und -komplexität ist es nicht notwendig, umfangreiche Observability-Tools einzusetzen. Die einzelnen Container der App werden gemeinsam als *Stack* mit Hilfe von Docker-Compose auf einem VPS mit Docker als Container Environment gestartet und auf selbigem mittels **Portainer**, einem selbst vollständig containerisierten Tool für Management und Monitoring von Container-Hosts, überwacht. Man erhält dabei grundlegende Einblicke in Logs, Metriken und die Container selbst. Natürlich werden z.B. Logs nicht annähernd so gut aufbereitet wie bei einem professionellen Tool, aber es reicht für Entwicklungs-Zwecke wie Debugging und Monitoring aus.
+
 ![Portainer: API](portainer-api.png)
 ![Portainer: DB](portainer-db.png)
 
 Bei Weiterentwicklung der Anwendung und einem perspektivischem Produktiv-Betrieb soll aber  Observability in größerem Maßstab mit Hilfe verschiedener Tools ermöglicht werden.
 Im folgenden werden diese näher beschrieben:
 
-Prometheus ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metriken zur Weiterverarbeitung zu sammeln.
+**Prometheus** ist ein Open-source Tool dessen Aufgabe es in diesem Projekt ist Metriken zur Weiterverarbeitung zu sammeln.
 Das System wird verwendet um die Verfügbarkeit und Leistung von Anwendungen und Diensten im laufenden Betrieb zu überwachen. Es sammelt Daten aus verschiedenen Quellen und stellt sie in einem leicht zugänglichen Format bereit, damit Entwickler die Leistung ihrer Systeme im Auge behalten und eventuelle Probleme schnell identifizieren und beheben zu können.
 
------
-Jaeger ist wie Prometheus ein Open-Source-System, zuständig für *Tracing*. Es wird  vor allem für Monitoring und Troubleshooten von Systemen verwendet.
+
+**Jaeger** ist wie Prometheus ein Open-Source-System, zuständig für *Tracing*. Es wird  vor allem für Monitoring und Troubleshooten von Systemen verwendet.
 Funktionen die es beinhaltet sind Tracing, um die Leistung von Anwendungen zu verfolgen und zu verstehen, wie sie auf Anfragen reagieren, sowie Metriken und Alerting, um die  Leistung von Anwendungen zu überwachen. 
 
-Die Auswahl des Tools für Tracing fiel auf Jaeger da es Open Source und kostenlos ist, was es für unser Projektumfang attraktiv macht.
-Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vor allem durch eine umfassende Dokumentation und Ressourcen.
+Die Auswahl des Tools für Tracing fiel auf Jaeger da es Open Source und kostenlos ist, was es für unser Projektumfang attraktiv macht. Jaeger bietet wie beschrieben Funktionen für Tracing, Metriken und Alerting und ist einfach zu integrieren und zu verwenden, vor allem durch eine umfassende Dokumentation und Ressourcen.
 
-Jaeger unterstützt verschiedene Tracing-Protokolle, wie z.B. OpenTracing, OpenCensus und Zipkin, was es Entwicklern ermöglicht, die für sie geeignetste Lösung zu wählen und sie leicht in ihre Anwendungen zu integrieren.
+Jaeger unterstützt verschiedene Tracing-Protokolle, wie z.B. OpenTracing, OpenCensus und Zipkin, was es Entwicklern ermöglicht, die für sie geeignetste Lösung zu wählen und sie leicht in ihre Anwendungen zu integrieren. Zudem bietet dieses Tool eine benutzerfreundliche Benutzeroberfläche, die es ermöglicht, Traces in Echtzeit zu visualisieren und zu analysieren, um eventuelle Probleme schnell zu identifizieren und beheben zu können.
 
-Zudem bietet dieses Tool eine benutzerfreundliche Benutzeroberfläche, die es ermöglicht, Traces in Echtzeit zu visualisieren und zu analysieren, um eventuelle Probleme schnell zu identifizieren und beheben zu können.
+**Logstash** ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln, zu verarbeiten und in einem Format bereitzustellen, welches die Weiternutzung vereinfacht. Es kann verwendet werden, um Logs von verschiedenen Quellen zu sammeln und in einem zentralen Repository zu speichern, sodass Entwickler leicht auf die Log-Daten zugreifen und sie verwenden können.
 
------
-
-Logstash ist ein Open-Source-Tools, das verwendet wird, um Log-Daten zu sammeln, zu verarbeiten und in einem Format bereitzustellen, welches die Weiternutzung vereinfacht. Es kann verwendet werden, um Logs von verschiedenen Quellen zu sammeln und in einem zentralen Repository zu speichern, sodass Entwickler leicht auf die Log-Daten zugreifen und sie verwenden können.
-
+---
 ### Weitere Diagramme
 *Zustandsdiagramm: Benutzer*
 ![Zustandsdiagramm](StatusDiagramUser.drawio.png) 
@@ -323,7 +324,7 @@ Beim Deployment der Anwendung auf einem VPS wird die Anwendung zunächst auf ein
 
 Um die einzelnen Services (Frontend, API, Datenbank) gemeinsam zu starten, verwenden wir Docker-Compose. Docker-Compose ist ein Tool, das es Entwicklern ermöglicht, mehrere Docker-Container zu starten und zu verwalten. Docker-Compose verwendet dabei eine Konfigurationsdatei, in der die einzelnen Container definiert werden. Auf diese Weise wird das Deployment der Anwendung vereinfacht und beschleunigt.
 
-#### Build & Deployment Pipeline
+#### **Build & Deployment Pipeline**
 
 ![Pipeline](Build_Deploy_pipeline.png)
 Die Build & Deployment Pipeline für dieses Projekt wurde mit Hilfe von GitHub Actions realisiert. GitHub Actions ist ein Tool, mit dem man automatisierte Workflows erstellen kann, die auf Ereignisse in einem GitHub-Repository ausgelöst werden. Dadurch kann man zum Beispiel automatisch einen Build-Prozess starten, wenn Änderungen in einem bestimmten Branch vorgenommen werden. Die erstellte Build-Version kann dann auf einem VPS oder in einer Cloud-Umgebung bereitgestellt werden, wobei auch hier wieder automatisierte Workflows genutzt werden können. GitHub Actions erleichtert das Erstellen und Verwalten von Build- und Deployment-Pipelines, indem es möglich ist, alles in einem GitHub-Repository zu konfigurieren und zu verwalten.
@@ -345,12 +346,15 @@ graph LR
   COPY --> BUILD
   BUILD --> UP
 ```
-
+---
 ### Operations
-*Operational Model*
 ![Operationsmodel](operationalModelFinal.png)
 
+Wie im obigen *Operational Model* erkennbar, besteht die Anwendung im Deployment aus einem weiteren Service (neben den drei bereits ausführlich beschriebenen): einem Reverse Proxy. Dieser ist für die Verwaltung der Anfragen an die Anwendung zuständig. Er leitet die Anfragen an die jeweiligen Services weiter und stellt die Anwendung für den Zugriff von außen bereit. Der Reverse Proxy ist ein weiterer Docker-Container, der auf dem VPS installiert ist und dort auch von anderen Projekten mitgenutzt werden kann. 
 
+Konkret handelt es sich um eine *traefik*-Instanz, die speziell annotierte Container automatisch erkennt und als Service bereitstellt. Dabei übernimmt der Reverse Proxy die Aufgabe des Load Balancers, indem er die Anfragen an die verschiedenen Services verteilt. Zusätzlich ermöglicht er automatische Verwendung von HTTPS, indem er automatisch Zertifikate von Let's Encrypt anfordert und diese für die Anwendung konfiguriert. Die beiden Container `web` (Flutter) und `api` (Flask) sind dadurch unter den URLs [`https://captain-cook.big-sala.me/`](https://captain-cook.big-sala.me/) bzw. [`https://captain-cook-api.big-sala.me/`](https://captain-cook-api.big-sala.me/) erreichbar, ohne dass die Container selbst einen Port öffnen müssen.
+
+---
 ### Statischer Code-Report
 *SonarQube* ist eine Plattform für statische Codeanalyse, die Entwicklern dabei hilft, die Qualität und Sicherheit ihres Codes zu verbessern. Es bietet eine Reihe von Werkzeugen und Plugins, die es Entwicklern ermöglichen, ihren Code auf Fehler, Schwachstellen und potenzielle Verbesserungen zu überprüfen.
 
@@ -360,6 +364,7 @@ Eines der Hauptmerkmale von SonarQube ist seine Fähigkeit, Entwicklern zu helfe
 
 Insgesamt ist SonarQube eine leistungsstarke Plattform für die statische Codeanalyse, die Entwicklern dabei hilft, die Qualität und Sicherheit ihres Codes zu verbessern und gleichzeitig die Effizienz ihrer Entwicklungsprozesse zu steigern.
 
+---
 ## Deep Dive: API
 ```mermaid
 graph TB
